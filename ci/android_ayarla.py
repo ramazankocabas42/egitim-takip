@@ -174,7 +174,7 @@ if not aktiviteler:
     sys.exit("MainActivity.kt bulunamadı")
 hedef = aktiviteler[0]
 paket = re.search(r"^package\s+([\w.]+)", oku(hedef), re.M).group(1)
-sablon = oku(os.path.join(os.path.dirname(os.path.abspath(__file__)), "android", "MainActivity.kt"))
+sablon = oku(os.path.join(os.path.dirname(os.path.abspath(__file__)), "kotlin", "MainActivity.kt"))
 yaz(hedef, sablon.replace("package PAKET", "package " + paket, 1))
 print("MainActivity yazıldı:", hedef)
 
