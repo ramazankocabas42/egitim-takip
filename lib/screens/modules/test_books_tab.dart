@@ -254,9 +254,9 @@ class _TestBookDetailScreenState extends State<TestBookDetailScreen> {
         title: 'Konu silinsin mi?', message: t.name, ok: 'Sil', destructive: true);
     if (!ok || !mounted) return;
     final yeni = b.topics.where((x) => x.name != t.name).toList();
-    final ok = await runSafe(
+    final silindi = await runSafe(
         context, () => Db.updateTestBookTopics(sid, b.id, yeni));
-    if (ok) _katalogaYaz(b, yeni);
+    if (silindi) _katalogaYaz(b, yeni);
   }
 
   Future<void> _deleteBook(TestBook b) async {
