@@ -6,6 +6,7 @@ import '../../lgs.dart';
 import '../../models.dart';
 import '../../services/ekran_okuyucu.dart';
 import '../../services/okul_db.dart';
+import '../eokul_screen.dart';
 import '../../widgets/common.dart';
 import '../../widgets/grafik.dart';
 
@@ -161,6 +162,17 @@ class _OkulTabState extends State<OkulTab> {
           '"Not Bilgileri" ya da "Yıl Sonu Notları" ekranının görüntüsünü seçin.');
       return;
     }
+    await _onizlemeGoster(sonuc);
+  }
+
+  Future<void> _eOkuldanEsitle() async {
+    final sonuc = await Navigator.of(context).push<EkranSonucu>(
+        MaterialPageRoute(builder: (_) => const EOkulEkrani()));
+    if (sonuc == null || sonuc.bos || !mounted) return;
+    await _onizlemeGoster(sonuc);
+  }
+
+  Future<void> _onizlemeGoster(EkranSonucu sonuc) async {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -273,20 +285,36 @@ class _OkulTabState extends State<OkulTab> {
         FilledButton.icon(
           style: FilledButton.styleFrom(
               backgroundColor: _lacivert, minimumSize: const Size.fromHeight(52)),
+          onPressed: _eOkuldanEsitle,
+          icon: const Icon(Icons.login),
+          label: const Text('e-Okul\'a giriş yap ve eşitle'),
+        ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(4, 6, 4, 10),
+          child: Text(
+            'e-Okul uygulama içinde açılır. Girişi siz yaparsınız; T.C. no ve okul no '
+            'uygulamada saklanmaz. Sınav Tarihleri, Not Bilgileri ve Yıl Sonu Notları '
+            'sayfalarını açıp Eşitle\'ye basın.',
+            style: TextStyle(fontSize: 12),
+          ),
+        ),
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+              foregroundColor: _lacivert, minimumSize: const Size.fromHeight(46)),
           onPressed: _okunuyor ? null : _ekrandanAktar,
           icon: _okunuyor
               ? const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  child: CircularProgressIndicator(strokeWidth: 2, color: _lacivert))
               : const Icon(Icons.document_scanner_outlined),
           label: Text(_okunuyor ? 'Okunuyor...' : 'e-Okul ekran görüntüsünden aktar'),
         ),
         const Padding(
           padding: EdgeInsets.fromLTRB(4, 6, 4, 0),
           child: Text(
-            'e-Okul VBS\'de "Sınav Tarihleri", "Not Bilgileri" ya da "Yıl Sonu Notları" '
-            'ekranının görüntüsünü alıp seçin. Görüntü telefonda okunur, hiçbir yere gönderilmez.',
+            'Alternatif: e-Okul VBS uygulamasındaki ekranların görüntüsünü seçin. '
+            'Görüntü telefonda okunur, hiçbir yere gönderilmez.',
             style: TextStyle(fontSize: 12),
           ),
         ),

@@ -11,6 +11,23 @@ class EkranSonucu {
   final notlar = <OkunanNot>[];
 
   bool get bos => sinavlar.isEmpty && yilSonlari.isEmpty && notlar.isEmpty;
+  int get adet => sinavlar.length + yilSonlari.length + notlar.length;
+
+  /// Başka bir sonucu tekrarsız ekler (aynı not için yenisi geçerli olur).
+  void ekle(EkranSonucu d) {
+    for (final x in d.sinavlar) {
+      if (!sinavlar.any((y) => y.ders == x.ders && y.tarih == x.tarih)) sinavlar.add(x);
+    }
+    for (final x in d.yilSonlari) {
+      yilSonlari.removeWhere((y) => y.yil == x.yil);
+      yilSonlari.add(x);
+    }
+    yilSonlari.sort((a, b) => a.yil.compareTo(b.yil));
+    for (final x in d.notlar) {
+      notlar.removeWhere((y) => y.ders == x.ders && y.tur == x.tur && y.sira == x.sira);
+      notlar.add(x);
+    }
+  }
 }
 
 class OkunanSinav {
@@ -107,8 +124,16 @@ class EkranOkuyucu {
   }
 
   static final _tarihRe = RegExp(r'(\d{1,2})\s*([A-Za-zÇĞİÖŞÜçğıöşü]+)\s*(20\d\d)');
+  static final _sayiTarihRe = RegExp(r'(?<!\d)(\d{1,2})[./](\d{1,2})[./](20\d\d)(?!\d)');
 
   static DateTime? _tarih(String s) {
+    final n = _sayiTarihRe.firstMatch(s);
+    if (n != null) {
+      final g = int.parse(n.group(1)!), a = int.parse(n.group(2)!);
+      if (g >= 1 && g <= 31 && a >= 1 && a <= 12) {
+        return DateTime(int.parse(n.group(3)!), a, g);
+      }
+    }
     final m = _tarihRe.firstMatch(s);
     if (m == null) return null;
     final ay = _aylar[KitapKatalog.kelimelereAyir(m.group(2)!).join()];
@@ -232,6 +257,194 @@ class EkranOkuyucu {
       final sira = siraM != null ? int.parse(siraM.group(1)!) : (sayac[k] ?? 0) + 1;
       sayac[k] = sira;
       out.notlar.add(OkunanNot(ders, tur, sira, sayilar.last));
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // e-Okul web sayfası (uygulama içi tarayıcı) metninden ayrıştırma.
+  // Her satır, tablo satırıysa hücreleri; değilse tek elemanlı listedir.
+  // -------------------------------------------------------------------------
+  static EkranSonucu metinOku(List<List<String>> satirlar) {
+    final out = EkranSonucu();
+    final rows = <List<String>>[
+      for (final r in satirlar)
+        if (r.any((c) => c.trim().isNotEmpty)) [for (final c in r) c.trim()],
+    ];
+    _metinSinavlar(rows, out);
+    _metinYilSonlari(rows, out);
+    _metinNotTablosu(rows, out);
+    if (out.notlar.isEmpty) _metinNotSatirlari(rows, out);
+    return out;
+  }
+
+  static String _katla(String s) => KitapKatalog.kelimelereAyir(s).join(' ');
+
+  static double? _notDegeri(String c) {
+    final m = RegExp(r'^(\d{1,3})(?:[.,](\d{1,4}))?$').firstMatch(c.trim());
+    if (m == null) return null;
+    final v = double.tryParse('${m.group(1)}.${m.group(2) ?? '0'}');
+    return (v != null && v >= 0 && v <= 100) ? v : null;
+  }
+
+  /// Ders adı ile tarih aynı satırda ya da ders adı bir üst satırda.
+  static void _metinSinavlar(List<List<String>> rows, EkranSonucu out) {
+    void ekle(String ders, DateTime t) {
+      if (!out.sinavlar.any((x) => x.ders == ders && x.tarih == t)) {
+        out.sinavlar.add(OkunanSinav(ders, t));
+      }
+    }
+
+    for (var i = 0; i < rows.length; i++) {
+      final metin = rows[i].join(' ');
+      final t = _tarih(metin);
+      if (t == null) continue;
+      String? ders;
+      for (final c in rows[i]) {
+        if (_tarih(c) != null && c.length < 30) continue;
+        ders = dersAdiBul(c);
+        if (ders != null) break;
+      }
+      if (ders == null) {
+        for (var j = i - 1; j >= 0 && j >= i - 3; j--) {
+          final ust = rows[j].join(' ');
+          if (_tarih(ust) != null) break;
+          ders = dersAdiBul(ust);
+          if (ders != null) break;
+        }
+      }
+      if (ders != null) ekle(ders, t);
+    }
+  }
+
+  /// "2022-2023 | 4. Sınıf | 96,4445" (aynı satırda ya da alt alta).
+  static void _metinYilSonlari(List<List<String>> rows, EkranSonucu out) {
+    final yilRe = RegExp(r'(20\d\d)\s*[-–/]\s*(20\d\d)');
+    final sinifRe = RegExp(r'(\d{1,2})\s*\.?\s*S[ıiIİ]n[ıiIİ]f', caseSensitive: false);
+    final ondalikRe = RegExp(r'(?<![\d.,])(\d{2,3})[,.](\d{2,4})(?![\d.,])');
+    for (var i = 0; i < rows.length; i++) {
+      final metin = rows[i].join(' ');
+      final ym = yilRe.firstMatch(metin);
+      if (ym == null) continue;
+      // Yıl satırı + en fazla 3 alt satır (yeni bir yıl gelene kadar)
+      final parca = StringBuffer(metin.replaceFirst(ym.group(0)!, ' '));
+      for (var j = i + 1; j < rows.length && j <= i + 3; j++) {
+        final alt = rows[j].join(' ');
+        if (yilRe.hasMatch(alt)) break;
+        parca.write(' $alt');
+      }
+      final p = parca.toString();
+      double? not;
+      for (final m in ondalikRe.allMatches(p)) {
+        final v = double.tryParse('${m.group(1)}.${m.group(2)}');
+        if (v != null && v <= 100) {
+          not = v;
+          break;
+        }
+      }
+      if (not == null) continue;
+      final sm = sinifRe.firstMatch(p);
+      final yil = '${ym.group(1)}-${ym.group(2)}';
+      out.yilSonlari.removeWhere((x) => x.yil == yil);
+      out.yilSonlari.add(OkunanYilSonu(yil, sm == null ? '' : '${sm.group(1)}. Sınıf', not));
+    }
+    out.yilSonlari.sort((a, b) => a.yil.compareTo(b.yil));
+  }
+
+  /// Başlık hücresinden (tür, sıra); not sütunu değilse null.
+  static (String, int?)? _sutunTuru(String baslik) {
+    final k = _katla(baslik);
+    if (k.isEmpty) return null;
+    if (k.contains('ortalama') || k.contains('puan') || k.contains('toplam')) return null;
+    final sira = int.tryParse(RegExp(r'(\d)').firstMatch(k)?.group(1) ?? '');
+    if (k.contains('performans')) return ('performans', sira);
+    if (k.contains('proje')) return ('proje', sira);
+    if (k.contains('sinav') || k.contains('yazili')) return ('yazili', sira);
+    return null;
+  }
+
+  /// Ders | 1. Sınav | 2. Sınav | 1. Performans | ... başlıklı tablo.
+  static void _metinNotTablosu(List<List<String>> rows, EkranSonucu out) {
+    Map<int, (String, int)>? sutunlar;
+    for (final r in rows) {
+      if (r.length >= 2) {
+        final eslesen = <int, (String, int?)>{};
+        for (var i = 0; i < r.length; i++) {
+          final t = _sutunTuru(r[i]);
+          if (t != null) eslesen[i] = t;
+        }
+        final dersVar = r.any((c) => dersAdiBul(c) != null);
+        if (eslesen.length >= 2 && !dersVar) {
+          // Sırası yazmayan sütunlara türü içinde sırayla numara ver
+          final sayac = <String, int>{};
+          sutunlar = {};
+          for (final e in eslesen.entries) {
+            final (tur, sira) = e.value;
+            final s = sira ?? (sayac[tur] ?? 0) + 1;
+            sayac[tur] = s;
+            sutunlar[e.key] = (tur, s);
+          }
+          continue;
+        }
+      }
+      if (sutunlar == null || r.length < 2) continue;
+      if (_tarih(r.join(' ')) != null) continue;
+      final ders = dersAdiBul(r.first) ?? (r.length > 1 ? dersAdiBul(r[1]) : null);
+      if (ders == null) continue;
+      for (final e in sutunlar.entries) {
+        if (e.key >= r.length) continue;
+        final v = _notDegeri(r[e.key]);
+        if (v == null) continue;
+        final (tur, sira) = e.value;
+        out.notlar.removeWhere((x) => x.ders == ders && x.tur == tur && x.sira == sira);
+        out.notlar.add(OkunanNot(ders, tur, sira, v));
+      }
+    }
+  }
+
+  /// Başlıksız düzen: ders adı satırı, altında "1. Sınav 85" gibi satırlar
+  /// ya da ders adıyla aynı satırda sıralı notlar.
+  static void _metinNotSatirlari(List<List<String>> rows, EkranSonucu out) {
+    final yilRe = RegExp(r'20\d\d\s*[-–/]\s*20\d\d');
+    String? ders;
+    final sayac = <String, int>{};
+    for (final r in rows) {
+      final m = r.join(' ');
+      if (_tarih(m) != null || yilRe.hasMatch(m)) continue;
+      final d = dersAdiBul(r.first.isNotEmpty ? r.first : m);
+      final kucuk = _katla(m);
+      final tur = kucuk.contains('performans')
+          ? 'performans'
+          : (kucuk.contains('proje') ? 'proje' : 'yazili');
+      final hucreler = r.length > 1 ? r : m.split(RegExp(r'\s+'));
+      final sayilar = <double>[];
+      for (final c in hucreler) {
+        final v = _notDegeri(c);
+        if (v != null) sayilar.add(v);
+      }
+      if (d != null) {
+        ders = d;
+        for (final v in sayilar) {
+          final k = '$d|yazili';
+          sayac[k] = (sayac[k] ?? 0) + 1;
+          out.notlar.add(OkunanNot(d, 'yazili', sayac[k]!, v));
+        }
+        continue;
+      }
+      if (ders == null || sayilar.isEmpty) continue;
+      if (!(kucuk.contains('sinav') ||
+          kucuk.contains('yazili') ||
+          kucuk.contains('performans') ||
+          kucuk.contains('proje'))) {
+        continue;
+      }
+      final siraM = RegExp(r'(\d)\s*\.').firstMatch(m);
+      final dr = ders;
+      final k = '$dr|$tur';
+      final sira = siraM != null ? int.parse(siraM.group(1)!) : (sayac[k] ?? 0) + 1;
+      sayac[k] = sira;
+      // "1. Sınav 85" -> son sayı nottur
+      out.notlar.removeWhere((x) => x.ders == dr && x.tur == tur && x.sira == sira);
+      out.notlar.add(OkunanNot(dr, tur, sira, sayilar.last));
     }
   }
 }
