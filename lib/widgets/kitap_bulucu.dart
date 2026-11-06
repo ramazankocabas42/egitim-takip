@@ -309,3 +309,26 @@ class _BarkodTaraEkraniState extends State<BarkodTaraEkrani> {
     );
   }
 }
+
+/// Barkod hiçbir yerde bulunamadığında ne yapılacağını anlatır.
+Future<void> kayitsizKitapUyarisi(BuildContext context, String isbn,
+    {required bool testKitabi}) {
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      icon: const Icon(Icons.menu_book_outlined),
+      title: const Text('Bu kitap henüz kayıtlı değil'),
+      content: Text(
+        'Barkod: $isbn\n\n'
+        'Kitabın adını ve toplam sayfa sayısını (son sayfa numarası) yazın'
+        '${testKitabi ? ', isterseniz içindekiler sayfasından konuları da ekleyin' : ''}.'
+        '\n\nBir kez kaydettiğinizde bu barkod, sizde ve diğer kullanıcılarda '
+        'bir dahaki sefere otomatik dolu gelir.',
+      ),
+      actions: [
+        FilledButton(
+            onPressed: () => Navigator.pop(ctx), child: const Text('Tamam')),
+      ],
+    ),
+  );
+}

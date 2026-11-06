@@ -603,8 +603,7 @@ class _AddTestBookScreenState extends State<AddTestBookScreen> {
     if (k.title.isNotEmpty && k.totalPages > 0) {
       _save();
     } else if (k.title.isEmpty) {
-      showInfo(context,
-          'Bu kitap henüz kayıtlı değil. Bilgileri ve konuları bir kez yazıp kaydedin, sonraki seferlerde otomatik gelir.');
+      kayitsizKitapUyarisi(context, k.isbn, testKitabi: true);
     } else {
       showInfo(context, 'Sayfa sayısı bulunamadı. Sayfa sayısını yazıp kaydedin.');
     }

@@ -401,8 +401,7 @@ class _AddBookSheetState extends State<_AddBookSheet> {
     if (k.title.isNotEmpty && k.totalPages > 0) {
       _save();
     } else if (k.title.isEmpty) {
-      showInfo(context,
-          'Bu kitap henüz kayıtlı değil. Bilgileri bir kez yazıp kaydedin, sonraki seferlerde otomatik gelir.');
+      kayitsizKitapUyarisi(context, k.isbn, testKitabi: false);
     } else {
       showInfo(context, 'Sayfa sayısı bulunamadı. Sayfa sayısını yazıp kaydedin.');
     }

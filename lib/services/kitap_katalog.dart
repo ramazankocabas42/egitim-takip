@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 
 import '../models.dart';
@@ -70,6 +71,24 @@ class KitapKatalog {
 
   static const _zamanAsimi = Duration(seconds: 8);
 
+  /// Uygulamayla birlikte gelen hazır kitap listesi (assets/kitaplar.json).
+  static Map<String, KatalogKitap>? _yerel;
+
+  static Future<Map<String, KatalogKitap>> _yerelKitaplar() async {
+    if (_yerel != null) return _yerel!;
+    try {
+      final liste = jsonDecode(await rootBundle.loadString('assets/kitaplar.json'));
+      _yerel = {
+        for (final m in (liste as List).whereType<Map<String, dynamic>>())
+          (m['isbn'] ?? '').toString(): KatalogKitap.fromMap(m),
+      };
+    } catch (e) {
+      debugPrint('Hazır kitap listesi okunamadı: $e');
+      _yerel = {};
+    }
+    return _yerel!;
+  }
+
   // -------------------------------------------------------------------------
   // ISBN
   // -------------------------------------------------------------------------
@@ -128,6 +147,21 @@ class KitapKatalog {
     if (katalog != null && katalog.title.isNotEmpty && katalog.totalPages > 0) {
       return katalog;
     }
+    // Uygulamayla gelen hazır listede varsa onu kullan (katalogdaki konular korunur).
+    final yerel = (await _yerelKitaplar())[isbn];
+    if (yerel != null) {
+      return KatalogKitap(
+        isbn: isbn,
+        title: yerel.title,
+        author: yerel.author,
+        publisher: yerel.publisher,
+        subject: (katalog?.subject.isNotEmpty ?? false)
+            ? katalog!.subject
+            : yerel.subject,
+        totalPages: yerel.totalPages,
+        topics: katalog?.topics ?? const [],
+      );
+    }
 
     final google = await _googleIsbn(isbn);
     final ol = (google == null || google.totalPages == 0 || google.publisher.isEmpty)
@@ -166,13 +200,25 @@ class KitapKatalog {
     final sonuc = await Future.wait([
       _katalogAra(kelimeler),
       _googleAra(q),
+      _yerelAra(kelimeler),
     ]);
-    final katalog = sonuc[0];
+    final katalog = [
+      ...sonuc[0],
+      ...sonuc[2].where((y) => !sonuc[0].any((k) => k.isbn == y.isbn)),
+    ];
     final gorulen = katalog.map((k) => k.isbn).where((i) => i.isNotEmpty).toSet();
     return [
       ...katalog,
       ...sonuc[1].where((k) => k.isbn.isEmpty || !gorulen.contains(k.isbn)),
     ];
+  }
+
+  static Future<List<KatalogKitap>> _yerelAra(List<String> kelimeler) async {
+    final hepsi = await _yerelKitaplar();
+    return hepsi.values.where((k) {
+      final metin = kelimelereAyir('${k.title} ${k.publisher} ${k.author}');
+      return kelimeler.every((w) => metin.any((m) => m.startsWith(w)));
+    }).toList();
   }
 
   static Future<List<KatalogKitap>> _katalogAra(List<String> kelimeler) async {
