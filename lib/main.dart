@@ -5,11 +5,13 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'firebase_options.dart';
 import 'screens/auth_gate.dart';
+import 'services/notifications.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('tr_TR');
+  await Bildirim.init();
   runApp(const EgitimTakipApp());
 }
 

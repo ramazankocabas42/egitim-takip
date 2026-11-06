@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models.dart';
 import '../services/db.dart';
+import '../services/notifications.dart';
 import '../widgets/common.dart';
 import 'student_screen.dart';
 
@@ -16,11 +17,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Stream<List<Student>> _stream;
+  late OdevIzleyici _izleyici;
 
   @override
   void initState() {
     super.initState();
     _stream = Db.myStudents(widget.me);
+    _izleyici = OdevIzleyici(widget.me)..baslat();
+    WidgetsBinding.instance.addPostFrameCallback((_) => Bildirim.izinIste());
   }
 
   @override
@@ -28,7 +32,15 @@ class _HomeScreenState extends State<HomeScreen> {
     super.didUpdateWidget(old);
     if (old.me.uid != widget.me.uid || old.me.role != widget.me.role) {
       _stream = Db.myStudents(widget.me);
+      _izleyici.durdur();
+      _izleyici = OdevIzleyici(widget.me)..baslat();
     }
+  }
+
+  @override
+  void dispose() {
+    _izleyici.durdur();
+    super.dispose();
   }
 
   AppUser get me => widget.me;

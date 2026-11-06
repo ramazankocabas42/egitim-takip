@@ -7,20 +7,10 @@ echo ">> Android proje dosyaları oluşturuluyor (mevcut lib/ dosyalarına dokun
 flutter create --platforms=android --org com.egitimtakip --project-name egitim_takip .
 
 echo ">> Paketler güncel sürümlere yükseltiliyor..."
-flutter pub upgrade --major-versions
+flutter pub upgrade --major-versions firebase_core firebase_auth cloud_firestore flutter_lints
 
-echo ">> minSdk 23 ayarlanıyor (Firebase gereksinimi)..."
-GRADLE_KTS="android/app/build.gradle.kts"
-GRADLE_GROOVY="android/app/build.gradle"
-if [ -f "$GRADLE_KTS" ]; then
-  sed -i.bak -E 's/minSdk = flutter\.minSdkVersion/minSdk = 23/' "$GRADLE_KTS" && rm -f "$GRADLE_KTS.bak"
-elif [ -f "$GRADLE_GROOVY" ]; then
-  sed -i.bak -E 's/minSdkVersion flutter\.minSdkVersion/minSdkVersion 23/; s/minSdk = flutter\.minSdkVersion/minSdk = 23/' "$GRADLE_GROOVY" && rm -f "$GRADLE_GROOVY.bak"
-fi
-
-echo ">> Uygulama adı 'Eğitim Takip' yapılıyor..."
-MANIFEST="android/app/src/main/AndroidManifest.xml"
-sed -i.bak -E 's/android:label="[^"]*"/android:label="Eğitim Takip"/' "$MANIFEST" && rm -f "$MANIFEST.bak"
+echo ">> Android ayarları (minSdk 24, uygulama adı, bildirim izinleri)..."
+python3 ci/android_ayarla.py . || python ci/android_ayarla.py .
 
 echo ">> Firebase bağlantısı yapılıyor (Firebase projenizi seçin, platform olarak sadece android)..."
 dart pub global activate flutterfire_cli

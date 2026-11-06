@@ -63,7 +63,7 @@ flutterfire configure --platforms=android
 firebase deploy --only firestore:rules --project <PROJE-KIMLIGI>
 ```
 Elle yapıyorsanız ayrıca `android/app/build.gradle(.kts)` içindeki
-`minSdk` değerini **23** yapın.
+`minSdk` değerini **24** yapın.
 
 > `flutterfire configure` sizden Firebase projenizi seçmenizi ister ve
 > `lib/firebase_options.dart` dosyasını otomatik oluşturur.
@@ -134,5 +134,5 @@ içindeki sekme listesine eklemek yeterli. Yeni alt koleksiyonu
 ## Sorun giderme
 - **"Firebase henüz yapılandırılmadı"**: `flutterfire configure` çalıştırılmamış.
 - **"Bu işlem için yetkiniz yok"**: Firestore kuralları yüklenmemiş ya da kişi o öğrenciye bağlı değil.
-- **Derleme hatası (minSdk)**: `android/app/build.gradle(.kts)` içinde `minSdk = 23`.
+- **Derleme hatası (minSdk)**: `android/app/build.gradle(.kts)` içinde `minSdk = 24`.
 - **Paket sürüm uyumsuzluğu**: `flutter pub upgrade --major-versions` sonra `flutter clean`.

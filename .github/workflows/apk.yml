@@ -29,19 +29,17 @@ jobs:
       - name: Android proje dosyalarını oluştur
         run: flutter create --platforms=android --org com.egitimtakip --project-name egitim_takip .
 
-      - name: Android ayarları (minSdk 23, uygulama adı, imza anahtarı)
+      - name: Android ayarları (minSdk 24, uygulama adı, bildirim izinleri, imza anahtarı)
         run: |
-          for f in android/app/build.gradle.kts android/app/build.gradle; do
-            [ -f "$f" ] && sed -i -E 's/minSdk(Version)? *=? *flutter\.minSdkVersion/minSdk = 23/' "$f"
-          done
-          sed -i -E 's/android:label="[^"]*"/android:label="Eğitim Takip"/' android/app/src/main/AndroidManifest.xml
+          python3 ci/android_ayarla.py .
           # Her derlemede aynı imza kullanılsın ki güncellemeler eskisinin üzerine kurulabilsin.
           mkdir -p ~/.android
           cp ci/debug.keystore ~/.android/debug.keystore
-          grep -n "minSdk" android/app/build.gradle* || true
+          grep -n "minSdk\|Desugaring" android/app/build.gradle* || true
 
       - name: Paketleri güncelle
-        run: flutter pub upgrade --major-versions
+        # Bildirim paketi sabit ana sürümde tutulur (kod onun API'sine göre yazıldı).
+        run: flutter pub upgrade --major-versions firebase_core firebase_auth cloud_firestore flutter_lints
 
       - name: Testler
         run: flutter test
