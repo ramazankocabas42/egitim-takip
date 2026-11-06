@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../models.dart';
 import 'db.dart';
+import 'okul_db.dart';
 
 /// Telefon bildirimleri: izin isteme, anlık bildirim ve ödev hatırlatmaları.
 class Bildirim {
@@ -141,6 +142,8 @@ class OdevIzleyici {
   final Map<String, Map<String, Homework>> _onceki = {};
   final Map<String, Set<int>> _planli = {};
   final Map<String, String> _adlar = {};
+  final Map<String, StreamSubscription<List<OkulSinav>>> _sinavAbonelikleri = {};
+  final Map<String, Set<int>> _sinavPlanli = {};
 
   static const _hatirlatmaSaati = 19; // teslimden önceki akşam
   static const _sabahSaati = 8; // teslim günü sabahı
@@ -154,6 +157,15 @@ class OdevIzleyici {
       final idler = liste.map((s) => s.id).toSet();
       for (final s in liste) {
         _adlar[s.id] = s.name;
+        if (_hatirlatmaAlir) {
+          _sinavAbonelikleri.putIfAbsent(
+            s.id,
+            () => OkulDb.sinavlar(s.id).listen(
+              (l) => _sinavHatirlat(s.id, l),
+              onError: (_) {},
+            ),
+          );
+        }
         _odevAbonelikleri.putIfAbsent(
           s.id,
           () => Db.homeworks(s.id).listen(
@@ -166,8 +178,12 @@ class OdevIzleyici {
           .where((k) => !idler.contains(k))
           .toList()) {
         _odevAbonelikleri.remove(sid)?.cancel();
+        _sinavAbonelikleri.remove(sid)?.cancel();
         _onceki.remove(sid);
         _hatirlatmalariIptal(sid);
+        for (final id in _sinavPlanli.remove(sid) ?? const <int>{}) {
+          Bildirim.iptal(id);
+        }
       }
     }, onError: (_) {});
   }
@@ -178,6 +194,11 @@ class OdevIzleyici {
       await a.cancel();
     }
     _odevAbonelikleri.clear();
+    for (final a in _sinavAbonelikleri.values) {
+      await a.cancel();
+    }
+    _sinavAbonelikleri.clear();
+    _sinavPlanli.clear();
     _onceki.clear();
     _planli.clear();
     await Bildirim.planlananlariSil();
@@ -254,6 +275,33 @@ class OdevIzleyici {
       Bildirim.iptal(id);
     }
     _planli[sid] = yeni;
+  }
+
+  /// Okul sınavından önceki akşam 19:00'da (geçtiyse sınav sabahı 07:00) hatırlatır.
+  void _sinavHatirlat(String sid, List<OkulSinav> liste) {
+    final ad = _adlar[sid] ?? 'Öğrenci';
+    final simdi = DateTime.now();
+    final yeni = <int>{};
+    for (final s in liste) {
+      final t = s.tarih;
+      if (t == null || s.not != null) continue;
+      final gun = DateTime(t.year, t.month, t.day);
+      final aksam = gun.subtract(const Duration(days: 1)).add(const Duration(hours: 19));
+      final sabah = gun.add(const Duration(hours: 7));
+      final id = Bildirim.kimlik('$sid/sinav/${s.id}');
+      final kim = me.role == UserRole.student ? '' : '$ad: ';
+      if (aksam.isAfter(simdi)) {
+        Bildirim.planla(id, 'Yarın ${s.ders} sınavı var', '$kim${s.baslik} • ${s.ders}', aksam);
+        yeni.add(id);
+      } else if (sabah.isAfter(simdi)) {
+        Bildirim.planla(id, 'Bugün ${s.ders} sınavı var', '$kim${s.baslik} • başarılar!', sabah);
+        yeni.add(id);
+      }
+    }
+    for (final id in (_sinavPlanli[sid] ?? const <int>{}).difference(yeni)) {
+      Bildirim.iptal(id);
+    }
+    _sinavPlanli[sid] = yeni;
   }
 
   void _hatirlatmalariIptal(String sid) {

@@ -7,6 +7,7 @@ import '../widgets/common.dart';
 import 'modules/books_tab.dart';
 import 'modules/homework_tab.dart';
 import 'modules/lgs_tab.dart';
+import 'modules/okul_tab.dart';
 import 'modules/overview_tab.dart';
 import 'modules/plan_tab.dart';
 import 'modules/soru_takibi_tab.dart';
@@ -61,7 +62,7 @@ class _StudentScreenState extends State<StudentScreen> {
           );
         }
         return DefaultTabController(
-          length: 8,
+          length: 9,
           child: Scaffold(
             appBar: AppBar(
               automaticallyImplyLeading: !widget.isRoot,
@@ -90,6 +91,7 @@ class _StudentScreenState extends State<StudentScreen> {
                   Tab(icon: Icon(Icons.calendar_month_outlined), text: 'Plan'),
                   Tab(icon: Icon(Icons.edit_note), text: 'Soru Takibi'),
                   Tab(icon: Icon(Icons.flag_outlined), text: 'LGS Deneme'),
+                  Tab(icon: Icon(Icons.school_outlined), text: 'Okul'),
                   Tab(icon: Icon(Icons.menu_book_outlined), text: 'Kitaplar'),
                   Tab(icon: Icon(Icons.library_books_outlined), text: 'Test Kitapları'),
                   Tab(icon: Icon(Icons.quiz_outlined), text: 'Testler'),
@@ -103,6 +105,7 @@ class _StudentScreenState extends State<StudentScreen> {
                 PlanTab(student: s, me: me),
                 SoruTakibiTab(student: s, me: me),
                 LgsTab(student: s, me: me),
+                OkulTab(student: s, me: me),
                 BooksTab(student: s, me: me),
                 TestBooksTab(student: s, me: me),
                 TestsTab(student: s, me: me),

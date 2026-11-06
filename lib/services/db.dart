@@ -42,6 +42,8 @@ class Db {
     'lgsDenemeleri',
     'haftalikPlan',
     'ayarlar',
+    'okulSinavlari',
+    'yilSonuNotlari',
   ];
 
   // -------------------------------------------------------------------------

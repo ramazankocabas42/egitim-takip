@@ -178,3 +178,11 @@ sablon = oku(os.path.join(os.path.dirname(os.path.abspath(__file__)), "kotlin", 
 yaz(hedef, sablon.replace("package PAKET", "package " + paket, 1))
 print("MainActivity yazıldı:", hedef)
 
+# --- ML Kit metin tanıma: R8 küçültmede diğer alfabe sınıfları için uyarıları sustur
+yaz(os.path.join(APP, "proguard-rules.pro"), """-dontwarn com.google.mlkit.vision.text.chinese.**
+-dontwarn com.google.mlkit.vision.text.devanagari.**
+-dontwarn com.google.mlkit.vision.text.japanese.**
+-dontwarn com.google.mlkit.vision.text.korean.**
+-keep class com.google.mlkit.** { *; }
+""")
+
