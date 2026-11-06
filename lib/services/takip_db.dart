@@ -78,9 +78,11 @@ class LgsDeneme {
     required this.puan,
     required this.dersler,
     required this.createdBy,
+    this.smsAnahtar = '',
   });
 
   final String id;
+  final String smsAnahtar;
   final String ad;
   final String yayin;
   final DateTime tarih;
@@ -106,6 +108,7 @@ class LgsDeneme {
       puan: m['puan'] is num ? (m['puan'] as num).toDouble() : null,
       dersler: dersHaritasi(m['dersler']),
       createdBy: _str(m['createdBy']),
+      smsAnahtar: _str(m['smsAnahtar']),
     );
   }
 }
@@ -280,6 +283,7 @@ class TakipDb {
     required double? puan,
     required Map<String, Dyb> dersler,
     String kaynak = 'elle',
+    String smsAnahtar = '',
   }) {
     final veri = <String, dynamic>{
       'ad': ad,
@@ -292,6 +296,7 @@ class TakipDb {
       return _sub(sid, 'lgsDenemeleri').add({
         ...veri,
         'kaynak': kaynak,
+        if (smsAnahtar.isNotEmpty) 'smsAnahtar': smsAnahtar,
         'createdBy': me.uid,
         'createdAt': Timestamp.now(),
       });

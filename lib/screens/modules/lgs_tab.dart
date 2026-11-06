@@ -110,8 +110,21 @@ class _LgsTabState extends State<LgsTab> {
                 icon: Icons.error_outline, text: errorText(_denemeler.error!));
           }
           if (_denemeler.loading) return const Loading();
-          return _govde(context, _denemeler.value!,
-              _hedef.value ?? const LgsHedef());
+          return RefreshIndicator(
+            onRefresh: () async {
+              if (!await SmsAktarici.izinVar()) return;
+              final eklenen =
+                  await SmsAktarici.tara(widget.me, zorla: true, esitle: true);
+              if (!mounted) return;
+              showInfo(
+                  context,
+                  eklenen.isEmpty
+                      ? 'Eşitlendi, eksik deneme yok.'
+                      : '${eklenen.length} deneme mesajlardan eklendi.');
+            },
+            child: _govde(context, _denemeler.value!,
+                _hedef.value ?? const LgsHedef()),
+          );
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -149,6 +162,7 @@ class _LgsTabState extends State<LgsTab> {
     final grafikListe = liste.take(12).toList().reversed.toList();
 
     return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 96),
       children: [
         VurguKart(
@@ -823,13 +837,14 @@ class _SmsKartiState extends State<_SmsKarti> {
 
   Future<void> _tara() async {
     setState(() => _taraniyor = true);
-    final eklenen = await SmsAktarici.tara(widget.me, zorla: true);
+    final eklenen =
+        await SmsAktarici.tara(widget.me, zorla: true, esitle: true);
     if (!mounted) return;
     setState(() => _taraniyor = false);
     showInfo(
         context,
         eklenen.isEmpty
-            ? 'Yeni deneme sonucu bulunamadı.'
+            ? 'Eşitlendi. Mesajlardaki tüm deneme sonuçları uygulamada var.'
             : '${eklenen.length} deneme eklendi:\n${eklenen.join('\n')}');
   }
 
@@ -881,14 +896,15 @@ class _SmsKartiState extends State<_SmsKarti> {
             ? 'SMS aktarımı açık'
             : 'Kurum SMS\'lerini otomatik aktar'),
         subtitle: Text(_izin!
-            ? '${SmsAktarici.gonderen} sonuçları uygulama her açıldığında eklenir.'
+            ? 'Mesajlarda olup burada olmayan sonuçları eklemek için Eşitle\'ye bas.'
             : '${SmsAktarici.gonderen}\'den gelen deneme sonuçları kendiliğinden eklensin.'),
         trailing: _taraniyor
             ? const SizedBox(
                 width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 3))
-            : FilledButton.tonal(
+            : FilledButton.tonalIcon(
                 onPressed: _izin! ? _tara : _ac,
-                child: Text(_izin! ? 'Tara' : 'Aç'),
+                icon: Icon(_izin! ? Icons.sync : Icons.sms_outlined, size: 18),
+                label: Text(_izin! ? 'Eşitle' : 'Aç'),
               ),
       ),
     );

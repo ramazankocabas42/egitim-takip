@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
 
+import 'package:flutter/material.dart' show DateUtils;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -84,9 +85,28 @@ class SmsAktarici {
       })
       .join(' ');
 
+  /// Mesajdaki deneme uygulamada zaten var mı?
+  static bool _zatenVar(
+      List<LgsDeneme> mevcut, String anahtar, KurumSonucu s, DateTime tarih) {
+    final t = s.dersler.values.fold(Dyb.bos, (a, b) => a + b);
+    for (final d in mevcut) {
+      if (d.smsAnahtar == anahtar) return true;
+      if (!DateUtils.isSameDay(d.tarih, tarih)) continue;
+      if (s.puan != null && d.puan != null && (s.puan! - d.puan!).abs() < 0.01) {
+        return true;
+      }
+      final dt = d.toplam;
+      if (dt.d == t.d && dt.y == t.y) return true;
+    }
+    return false;
+  }
+
   /// Mesajları tarar; eklenen denemelerin kısa açıklamalarını döndürür.
   /// [zorla] false ise son taramadan bu yana 1 dakika geçmeden tekrar taramaz.
-  static Future<List<String>> tara(AppUser me, {bool zorla = false}) async {
+  /// [esitle] true ise daha önce eklenip silinmiş denemeler de geri eklenir:
+  /// mesajlarda olup uygulamada olmayan her sonuç eklenir.
+  static Future<List<String>> tara(AppUser me,
+      {bool zorla = false, bool esitle = false}) async {
     if (!destekleniyor || _calisiyor) return const [];
     final simdi = DateTime.now();
     if (!zorla &&
@@ -112,6 +132,7 @@ class SmsAktarici {
           const [];
 
       final islenenler = <String, Set<String>>{};
+      final mevcutlar = <String, List<LgsDeneme>>{};
       // Eskiden yeniye işle ki bildirimler sırayla gelsin.
       for (final s in ham.reversed) {
         if (s is! Map) continue;
@@ -123,11 +144,20 @@ class SmsAktarici {
 
         final anahtar = _ozet(metin);
         final kume = islenenler[ogr.id] ??= await TakipDb.smsIslenenler(ogr.id);
-        if (kume.contains(anahtar)) continue;
+        if (!esitle && kume.contains(anahtar)) continue;
 
         final smsTarihi = s['tarih'] is num
             ? DateTime.fromMillisecondsSinceEpoch((s['tarih'] as num).toInt())
             : simdi;
+        final mevcut = mevcutlar[ogr.id] ??=
+            List.of(await TakipDb.denemeler(ogr.id).first);
+        if (_zatenVar(mevcut, anahtar, sonuc, sonuc.tarih ?? smsTarihi)) {
+          if (!kume.contains(anahtar)) {
+            await TakipDb.smsIslendi(ogr.id, me, anahtar);
+            kume.add(anahtar);
+          }
+          continue;
+        }
         await TakipDb.denemeKaydet(
           ogr.id,
           me,
@@ -137,7 +167,18 @@ class SmsAktarici {
           puan: sonuc.puan,
           dersler: sonuc.dersler,
           kaynak: 'sms',
+          smsAnahtar: anahtar,
         );
+        mevcut.add(LgsDeneme(
+          id: '',
+          ad: sonuc.ad,
+          yayin: '',
+          tarih: sonuc.tarih ?? smsTarihi,
+          puan: sonuc.puan,
+          dersler: sonuc.dersler,
+          createdBy: me.uid,
+          smsAnahtar: anahtar,
+        ));
         await TakipDb.smsIslendi(ogr.id, me, anahtar);
         kume.add(anahtar);
 
