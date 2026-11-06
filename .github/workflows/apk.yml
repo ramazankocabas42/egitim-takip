@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+env:
+  # İmza anahtarının şifresi: Settings → Secrets and variables → Actions
+  EGITIM_KEYSTORE_PASSWORD: ${{ secrets.EGITIM_KEYSTORE_PASSWORD }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,8 +33,12 @@ jobs:
       - name: Android proje dosyalarını oluştur
         run: flutter create --platforms=android --org com.egitimtakip --project-name egitim_takip .
 
-      - name: Android ayarları (minSdk 24, uygulama adı, bildirim izinleri, imza anahtarı)
+      - name: Android ayarları (minSdk 24, uygulama adı, izinler, imza anahtarı)
         run: |
+          if [ -z "$EGITIM_KEYSTORE_PASSWORD" ]; then
+            echo "::error::EGITIM_KEYSTORE_PASSWORD gizli ayarı eksik. GitHub → Settings → Secrets and variables → Actions bölümünden ekleyin."
+            exit 1
+          fi
           python3 ci/android_ayarla.py .
           grep -n "minSdk\|Desugaring\|keystore" android/app/build.gradle* || true
 
@@ -43,11 +51,11 @@ jobs:
 
       - name: APK derle
         run: |
-          flutter build apk --release --build-number=${{ github.run_number }}
+          flutter build apk --release --build-number=${{ github.run_number }} --dart-define=BUILD_NUMBER=${{ github.run_number }}
           mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/egitim-takip.apk
 
       - name: İmza kontrolü (güncellemeler eskisinin üzerine kurulabilsin)
-        run: python3 ci/imza_kontrol.py build/app/outputs/flutter-apk/egitim-takip.apk ci/debug.keystore
+        run: python3 ci/imza_kontrol.py build/app/outputs/flutter-apk/egitim-takip.apk ci/egitim-takip.p12
 
       - name: APK'yı yayınla
         uses: softprops/action-gh-release@v2
@@ -55,7 +63,9 @@ jobs:
           tag_name: surum-${{ github.run_number }}
           name: Eğitim Takip - Sürüm ${{ github.run_number }}
           body: |
-            Telefona kurmak için aşağıdaki **egitim-takip.apk** dosyasına dokunun.
+            ${{ github.event.head_commit.message }}
+
+            Telefona ilk kez kurmak için aşağıdaki egitim-takip.apk dosyasına dokunun. Uygulama kuruluysa güncelleme uygulamanın içinden gelir.
           files: build/app/outputs/flutter-apk/egitim-takip.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

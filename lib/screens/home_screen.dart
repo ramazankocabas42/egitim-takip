@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models.dart';
 import '../services/db.dart';
+import '../services/guncelleme.dart';
 import '../services/notifications.dart';
 import '../widgets/common.dart';
 import 'student_screen.dart';
@@ -24,7 +25,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _stream = Db.myStudents(widget.me);
     _izleyici = OdevIzleyici(widget.me)..baslat();
-    WidgetsBinding.instance.addPostFrameCallback((_) => Bildirim.izinIste());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Bildirim.izinIste();
+      if (mounted) await Guncelleme.kontrolEt(context);
+    });
   }
 
   @override

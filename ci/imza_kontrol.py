@@ -1,5 +1,9 @@
-"""Derlenen APK'nın ci/debug.keystore ile imzalandığını doğrular."""
+"""Derlenen APK'nın ci/egitim-takip.p12 ile imzalandığını doğrular.
+
+Şifre EGITIM_KEYSTORE_PASSWORD ortam değişkeninden okunur.
+"""
 import hashlib
+import os
 import struct
 import subprocess
 import sys
@@ -34,13 +38,13 @@ while o < son:
         break
 
 anahtar = subprocess.run(
-    ["keytool", "-exportcert", "-keystore", keystore, "-storepass", "android",
-     "-alias", "androiddebugkey"],
+    ["keytool", "-exportcert", "-storetype", "PKCS12", "-keystore", keystore,
+     "-storepass", os.environ["EGITIM_KEYSTORE_PASSWORD"], "-alias", "egitimtakip"],
     capture_output=True, check=True).stdout
 anahtar_sertifika = hashlib.sha256(anahtar).hexdigest()
 
-print("APK   :", apk_sertifika)
+print("APK    :", apk_sertifika)
 print("Anahtar:", anahtar_sertifika)
 if apk_sertifika != anahtar_sertifika:
-    sys.exit("HATA: APK, ci/debug.keystore ile imzalanmamış!")
+    sys.exit("HATA: APK, ci/egitim-takip.p12 ile imzalanmamış!")
 print("İmza doğru.")

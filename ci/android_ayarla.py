@@ -37,10 +37,13 @@ izinler = [
     "android.permission.VIBRATE",
     "android.permission.INTERNET",
     "android.permission.CAMERA",
+    "android.permission.REQUEST_INSTALL_PACKAGES",
 ]
 eklenecek = "".join(
     f'    <uses-permission android:name="{i}"/>\n' for i in izinler if i not in m
 )
+if "WRITE_EXTERNAL_STORAGE" not in m:
+    eklenecek += '    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>\n'
 if "android.hardware.camera" not in m:
     eklenecek += '    <uses-feature android:name="android.hardware.camera" android:required="false"/>\n'
 if eklenecek:
@@ -58,7 +61,34 @@ if "ScheduledNotificationReceiver" not in m:
         </receiver>
 """
     m = m.replace("    </application>", alicilar + "    </application>", 1)
+
+# Uygulama içi güncelleme (ota_update)
+if "OtaUpdateFileProvider" not in m:
+    ota = """        <provider
+            android:name="sk.fourq.otaupdate.OtaUpdateFileProvider"
+            android:authorities="${applicationId}.ota_update_provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+        <receiver android:name="sk.fourq.otaupdate.InstallResultReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="${applicationId}.ACTION_INSTALL_COMPLETE"/>
+            </intent-filter>
+        </receiver>
+"""
+    m = m.replace("    </application>", ota + "    </application>", 1)
 yaz(MANIFEST, m)
+
+xml_klasor = os.path.join(APP, "src", "main", "res", "xml")
+os.makedirs(xml_klasor, exist_ok=True)
+yaz(os.path.join(xml_klasor, "filepaths.xml"), """<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <files-path name="internal_apk_storage" path="ota_update/"/>
+</paths>
+""")
 
 # --- build.gradle(.kts) ----------------------------------------------------
 kts = os.path.join(APP, "build.gradle.kts")
@@ -86,26 +116,36 @@ if "CoreLibraryDesugaringEnabled" not in g and "coreLibraryDesugaringEnabled" no
         sys.exit("compileOptions bloğu bulunamadı")
     g = g.replace("compileOptions {", "compileOptions {\n        " + satir, 1)
 
-# Sabit imza: her derleme ci/debug.keystore ile imzalanır, böylece yeni sürüm
-# eskisinin üzerine kurulabilir.
-if "ci/debug.keystore" not in g:
+# Sabit imza: EGITIM_KEYSTORE_PASSWORD tanımlıysa (GitHub Actions'ta gizli
+# ayar olarak) her derleme ci/egitim-takip.p12 ile imzalanır, böylece yeni
+# sürüm eskisinin üzerine kurulabilir. Tanımlı değilse (yerel derleme)
+# Flutter'ın varsayılan debug anahtarı kullanılır.
+if "egitim-takip.p12" not in g:
     if kotlin_dsl:
         imza = """    signingConfigs {
         getByName("debug") {
-            storeFile = file("../../ci/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+            val sifre = System.getenv("EGITIM_KEYSTORE_PASSWORD")
+            if (!sifre.isNullOrEmpty()) {
+                storeFile = file("../../ci/egitim-takip.p12")
+                storeType = "PKCS12"
+                storePassword = sifre
+                keyAlias = "egitimtakip"
+                keyPassword = sifre
+            }
         }
     }
 """
     else:
         imza = """    signingConfigs {
         debug {
-            storeFile file('../../ci/debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            def sifre = System.getenv("EGITIM_KEYSTORE_PASSWORD")
+            if (sifre) {
+                storeFile file('../../ci/egitim-takip.p12')
+                storeType 'PKCS12'
+                storePassword sifre
+                keyAlias 'egitimtakip'
+                keyPassword sifre
+            }
         }
     }
 """
