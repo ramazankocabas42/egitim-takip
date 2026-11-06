@@ -226,6 +226,54 @@ class _AddResultSheetState extends State<_AddResultSheet> {
   int _penalty = 0;
   DateTime _date = today();
   bool _busy = false;
+  TestBook? _kitap;
+  String? _konu;
+  int? _testNo;
+
+  /// Kitap / konu / test seçilince adı otomatik oluşturur.
+  void _adiOlustur() {
+    final parcalar = <String>[
+      if (_kitap != null) _kitap!.title,
+      if (_konu != null && _konu!.isNotEmpty) _konu!,
+      if (_testNo != null) 'Test $_testNo',
+    ];
+    _name.text = parcalar.join(' – ');
+  }
+
+  Future<void> _kitapSec() async {
+    final kitap = await showModalBottomSheet<TestBook>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _KitapSecici(studentId: widget.student.id),
+    );
+    if (kitap == null) return;
+    setState(() {
+      _kitap = kitap;
+      _konu = null;
+      _testNo = null;
+      if (subjects.contains(kitap.subject)) _subject = kitap.subject;
+      _adiOlustur();
+    });
+    if (kitap.topics.isNotEmpty && mounted) await _testSec();
+  }
+
+  Future<void> _testSec() async {
+    final k = _kitap;
+    if (k == null) return;
+    final sonuc = await showModalBottomSheet<(String?, int?)>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _TestSecici(kitap: k, konu: _konu, testNo: _testNo),
+    );
+    if (sonuc == null) return;
+    setState(() {
+      _konu = sonuc.$1;
+      _testNo = sonuc.$2;
+      _adiOlustur();
+    });
+  }
 
   @override
   void initState() {
@@ -292,9 +340,37 @@ class _AddResultSheetState extends State<_AddResultSheet> {
     return SheetFrame(
       title: 'Test / Deneme Sonucu',
       children: [
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _kitapSec,
+                icon: const Icon(Icons.library_books_outlined),
+                label: Text(_kitap?.title ?? 'Kitap seç',
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _kitap == null ? null : _testSec,
+                icon: const Icon(Icons.checklist),
+                label: Text(
+                    _konu != null || _testNo != null
+                        ? [
+                            if (_konu != null) _konu!,
+                            if (_testNo != null) 'Test $_testNo'
+                          ].join(' • ')
+                        : 'Test seç',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
         TextField(
           controller: _name,
-          autofocus: true,
           textCapitalization: TextCapitalization.sentences,
           decoration: const InputDecoration(
               labelText: 'Adı', hintText: 'Ör. Kesirler Test 3, LGS Deneme 2'),
@@ -358,3 +434,179 @@ class _AddResultSheetState extends State<_AddResultSheet> {
     );
   }
 }
+
+/// Öğrencinin test kitaplarından seçim (devam edenler önce).
+class _KitapSecici extends StatelessWidget {
+  const _KitapSecici({required this.studentId});
+
+  final String studentId;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.7,
+        child: StreamBuilder<List<TestBook>>(
+          stream: Db.testBooks(studentId),
+          builder: (context, snap) {
+            if (snap.hasError) {
+              return EmptyState(
+                  icon: Icons.error_outline, text: errorText(snap.error!));
+            }
+            if (!snap.hasData) return const Loading();
+            const sira = {'devam': 0, 'istek': 1, 'bitti': 2};
+            final liste = List.of(snap.data!)
+              ..sort((a, b) => sira[a.durumu]!.compareTo(sira[b.durumu]!));
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                  child: Text('Kitap seç',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.w700)),
+                ),
+                Expanded(
+                  child: liste.isEmpty
+                      ? const EmptyState(
+                          icon: Icons.library_books_outlined,
+                          text: 'Henüz test kitabı eklenmemiş.\n'
+                              '"Test Kitapları" sekmesinden kitap ekleyin.')
+                      : ListView.builder(
+                          itemCount: liste.length,
+                          itemBuilder: (context, i) {
+                            final k = liste[i];
+                            return ListTile(
+                              leading: CircleAvatar(
+                                child: Text('%${(k.progress * 100).round()}',
+                                    style: const TextStyle(fontSize: 11)),
+                              ),
+                              title: Text(k.title),
+                              subtitle: Text([
+                                if (k.subject.isNotEmpty) k.subject,
+                                if (k.publisher.isNotEmpty) k.publisher,
+                                kitapDurumlari[k.durumu] ?? '',
+                              ].join(' • ')),
+                              onTap: () => Navigator.pop(context, k),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Seçilen kitabın konularından ve test numarasından seçim.
+class _TestSecici extends StatefulWidget {
+  const _TestSecici({required this.kitap, this.konu, this.testNo});
+
+  final TestBook kitap;
+  final String? konu;
+  final int? testNo;
+
+  @override
+  State<_TestSecici> createState() => _TestSeciciState();
+}
+
+class _TestSeciciState extends State<_TestSecici> {
+  late String? _konu = widget.konu;
+  late final _no =
+      TextEditingController(text: widget.testNo == null ? '' : '${widget.testNo}');
+
+  @override
+  void dispose() {
+    _no.dispose();
+    super.dispose();
+  }
+
+  void _tamam() => Navigator.pop(
+      context, (_konu, int.tryParse(_no.text.trim())));
+
+  @override
+  Widget build(BuildContext context) {
+    final k = widget.kitap;
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.7,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+                child: Text(k.title,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                child: TextField(
+                  controller: _no,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Test numarası (isteğe bağlı)',
+                    prefixIcon: Icon(Icons.tag),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: k.topics.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text(
+                            'Bu kitaba konu eklenmemiş. Test numarasını yazıp Tamam\'a basın.'),
+                      )
+                    : ListView(
+                        children: [
+                          RadioListTile<String?>(
+                            value: null,
+                            groupValue: _konu,
+                            onChanged: (v) => setState(() => _konu = v),
+                            title: const Text('Konu seçmeden devam et'),
+                          ),
+                          for (final t in k.topics)
+                            RadioListTile<String?>(
+                              value: t.name,
+                              groupValue: _konu,
+                              onChanged: (v) => setState(() => _konu = v),
+                              title: Text(t.name),
+                              subtitle: t.hasRange
+                                  ? Text('Sayfa ${t.start}–${t.end}'
+                                      '${k.isTopicDone(t) ? '  •  tamamlandı' : ''}')
+                                  : null,
+                              secondary: k.isTopicDone(t)
+                                  ? const Icon(Icons.check_circle,
+                                      color: Colors.green)
+                                  : null,
+                            ),
+                        ],
+                      ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48)),
+                  onPressed: _tamam,
+                  child: const Text('Tamam'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
