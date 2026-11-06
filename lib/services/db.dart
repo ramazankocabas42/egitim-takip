@@ -358,8 +358,10 @@ class Db {
     required String title,
     required String author,
     required int totalPages,
+    String isbn = '',
   }) =>
       _sub(sid, 'books').add({
+        if (isbn.isNotEmpty) 'isbn': isbn,
         'title': title,
         'author': author,
         'totalPages': totalPages,
@@ -448,8 +450,10 @@ class Db {
     required String subject,
     required int totalPages,
     required List<Topic> topics,
+    String isbn = '',
   }) =>
       _sub(sid, 'testBooks').add({
+        if (isbn.isNotEmpty) 'isbn': isbn,
         'title': title,
         'publisher': publisher,
         'subject': subject,

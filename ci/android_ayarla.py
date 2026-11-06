@@ -35,10 +35,14 @@ izinler = [
     "android.permission.POST_NOTIFICATIONS",
     "android.permission.RECEIVE_BOOT_COMPLETED",
     "android.permission.VIBRATE",
+    "android.permission.INTERNET",
+    "android.permission.CAMERA",
 ]
 eklenecek = "".join(
     f'    <uses-permission android:name="{i}"/>\n' for i in izinler if i not in m
 )
+if "android.hardware.camera" not in m:
+    eklenecek += '    <uses-feature android:name="android.hardware.camera" android:required="false"/>\n'
 if eklenecek:
     m = re.sub(r"(<manifest[^>]*>\n)", lambda x: x.group(1) + eklenecek, m, count=1)
 

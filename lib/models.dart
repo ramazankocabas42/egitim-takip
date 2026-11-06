@@ -268,9 +268,11 @@ class TestBook {
     required this.solvedPages,
     required this.completedTopics,
     required this.createdBy,
+    this.isbn = '',
   });
 
   final String id;
+  final String isbn;
   final String title;
   final String publisher;
   final String subject;
@@ -313,6 +315,7 @@ class TestBook {
           : <int>{},
       completedTopics: _strList(m['completedTopics']).toSet(),
       createdBy: _str(m['createdBy']),
+      isbn: _str(m['isbn']),
     );
   }
 }

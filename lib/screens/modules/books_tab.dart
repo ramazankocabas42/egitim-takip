@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../models.dart';
 import '../../services/db.dart';
+import '../../services/kitap_katalog.dart';
 import '../../widgets/common.dart';
+import '../../widgets/kitap_bulucu.dart';
 
 /// KİTAP OKUMA MODÜLÜ
 /// Kitap eklenir; öğrenci her gün "Okudum" deyip kaç sayfa okuduğunu yazar.
@@ -376,6 +378,8 @@ class _AddBookSheetState extends State<_AddBookSheet> {
   final _author = TextEditingController();
   final _pages = TextEditingController();
   bool _busy = false;
+  String _isbn = '';
+  String _publisher = '';
 
   @override
   void dispose() {
@@ -385,23 +389,49 @@ class _AddBookSheetState extends State<_AddBookSheet> {
     super.dispose();
   }
 
+  /// Barkoddan / aramadan gelen kitap: formu doldurur, bilgiler tamsa kaydeder.
+  void _kitapSecildi(KatalogKitap k) {
+    setState(() {
+      _isbn = k.isbn;
+      _publisher = k.publisher;
+      if (k.title.isNotEmpty) _title.text = k.title;
+      if (k.author.isNotEmpty) _author.text = k.author;
+      if (k.totalPages > 0) _pages.text = '${k.totalPages}';
+    });
+    if (k.title.isNotEmpty && k.totalPages > 0) {
+      _save();
+    } else if (k.title.isEmpty) {
+      showInfo(context,
+          'Bu kitap henüz kayıtlı değil. Bilgileri bir kez yazıp kaydedin, sonraki seferlerde otomatik gelir.');
+    } else {
+      showInfo(context, 'Sayfa sayısı bulunamadı. Sayfa sayısını yazıp kaydedin.');
+    }
+  }
+
   Future<void> _save() async {
+    if (_busy) return;
     final title = _title.text.trim();
     if (title.isEmpty) {
       showInfo(context, 'Kitabın adını yazın.');
       return;
     }
+    final author = _author.text.trim();
+    final pages = parseInt(_pages.text) ?? 0;
     setState(() => _busy = true);
     final nav = Navigator.of(context);
     final ok = await runSafe(
       context,
       () => Db.addBook(widget.student.id, widget.me,
-          title: title,
-          author: _author.text.trim(),
-          totalPages: parseInt(_pages.text) ?? 0),
-      success: 'Kitap eklendi.',
+          title: title, author: author, totalPages: pages, isbn: _isbn),
+      success: 'Kitap eklendi: $title',
     );
     if (ok) {
+      KitapKatalog.kaydet(KatalogKitap(
+          isbn: _isbn,
+          title: title,
+          author: author,
+          publisher: _publisher,
+          totalPages: pages));
       nav.pop();
     } else if (mounted) {
       setState(() => _busy = false);
@@ -413,9 +443,10 @@ class _AddBookSheetState extends State<_AddBookSheet> {
     return SheetFrame(
       title: 'Yeni kitap',
       children: [
+        KitapBulucu(onSecildi: _kitapSecildi),
+        const SizedBox(height: 16),
         TextField(
           controller: _title,
-          autofocus: true,
           textCapitalization: TextCapitalization.words,
           decoration: const InputDecoration(labelText: 'Kitabın adı'),
         ),

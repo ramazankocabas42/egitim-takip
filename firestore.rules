@@ -52,6 +52,28 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // ---------------- Ortak kitap kataloğu ----------------
+    // Barkodla (ISBN) ya da adla kaydedilen kitapların bilgisi. Giriş yapan
+    // herkes okuyabilir ve ekleyebilir; böylece bir kez kaydedilen kitap
+    // (sayfa sayısı, konular) sonraki kullanıcılara otomatik gelir.
+    match /kitapKatalog/{kitapId} {
+      function validKitap(d) {
+        return d.size() <= 15
+          && shortStr(d.title, 200) && d.title.size() > 0
+          && (!('isbn' in d) || (d.isbn is string && d.isbn == kitapId))
+          && (!('author' in d) || shortStr(d.author, 200))
+          && (!('publisher' in d) || shortStr(d.publisher, 200))
+          && (!('subject' in d) || shortStr(d.subject, 60))
+          && (!('totalPages' in d) || (d.totalPages is int && d.totalPages >= 0 && d.totalPages <= 5000))
+          && (!('topics' in d) || (d.topics is list && d.topics.size() <= 300))
+          && d.anahtarlar is list && d.anahtarlar.size() <= 200
+          && d.updatedBy == uid();
+      }
+      allow read: if signedIn();
+      allow create, update: if signedIn() && validKitap(request.resource.data);
+      allow delete: if false;
+    }
+
     // ---------------- Öğrenciler ----------------
     match /students/{sid} {
 
