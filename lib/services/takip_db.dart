@@ -279,6 +279,7 @@ class TakipDb {
     required DateTime tarih,
     required double? puan,
     required Map<String, Dyb> dersler,
+    String kaynak = 'elle',
   }) {
     final veri = <String, dynamic>{
       'ad': ad,
@@ -290,6 +291,7 @@ class TakipDb {
     if (id == null) {
       return _sub(sid, 'lgsDenemeleri').add({
         ...veri,
+        'kaynak': kaynak,
         'createdBy': me.uid,
         'createdAt': Timestamp.now(),
       });
@@ -311,6 +313,18 @@ class TakipDb {
   static Future<void> hedefKaydet(
           String sid, AppUser me, double? puan, String okul) =>
       _ayarYaz(_ayar(sid, 'lgsHedef'), me, {'puan': puan, 'okul': okul});
+
+  // ---- SMS aktarımı: işlenen mesajlar ----
+  static Future<Set<String>> smsIslenenler(String sid) async {
+    final d = await _ayar(sid, 'smsAktarim').get();
+    final l = d.data()?['islenenler'];
+    return l is List ? l.map((e) => e.toString()).toSet() : <String>{};
+  }
+
+  static Future<void> smsIslendi(String sid, AppUser me, String anahtar) =>
+      _ayarYaz(_ayar(sid, 'smsAktarim'), me, {
+        'islenenler': FieldValue.arrayUnion([anahtar]),
+      });
 
   // ---- Müsaitlik ----
   static const varsayilanMusaitlik = [90, 90, 90, 90, 60, 180, 120];

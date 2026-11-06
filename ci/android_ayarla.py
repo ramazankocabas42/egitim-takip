@@ -38,6 +38,7 @@ izinler = [
     "android.permission.INTERNET",
     "android.permission.CAMERA",
     "android.permission.REQUEST_INSTALL_PACKAGES",
+    "android.permission.READ_SMS",
 ]
 eklenecek = "".join(
     f'    <uses-permission android:name="{i}"/>\n' for i in izinler if i not in m
@@ -163,3 +164,17 @@ if "desugar_jdk_libs" not in g:
 yaz(p, g)
 
 print("Android ayarları uygulandı:", p)
+
+# --- MainActivity: SMS okuma kanalı ----------------------------------------
+import glob
+
+aktiviteler = glob.glob(os.path.join(APP, "src", "main", "kotlin", "**", "MainActivity.kt"),
+                        recursive=True)
+if not aktiviteler:
+    sys.exit("MainActivity.kt bulunamadı")
+hedef = aktiviteler[0]
+paket = re.search(r"^package\s+([\w.]+)", oku(hedef), re.M).group(1)
+sablon = oku(os.path.join(os.path.dirname(os.path.abspath(__file__)), "android", "MainActivity.kt"))
+yaz(hedef, sablon.replace("package PAKET", "package " + paket, 1))
+print("MainActivity yazıldı:", hedef)
+

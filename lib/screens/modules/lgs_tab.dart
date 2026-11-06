@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../lgs.dart';
 import '../../models.dart';
+import '../../services/sms_aktarici.dart';
 import '../../services/takip_db.dart';
 import '../../widgets/common.dart';
 import '../../widgets/dyb_giris.dart';
@@ -203,6 +204,7 @@ class _LgsTabState extends State<LgsTab> {
             ],
           ),
         ),
+        if (SmsAktarici.destekleniyor) _SmsKarti(me: widget.me),
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(
             foregroundColor: _yesil,
@@ -796,3 +798,100 @@ class _DenemeGirisEkraniState extends State<DenemeGirisEkrani> {
     );
   }
 }
+
+/// Kurum SMS'lerinden otomatik aktarımı açma / şimdi tarama kartı.
+class _SmsKarti extends StatefulWidget {
+  const _SmsKarti({required this.me});
+
+  final AppUser me;
+
+  @override
+  State<_SmsKarti> createState() => _SmsKartiState();
+}
+
+class _SmsKartiState extends State<_SmsKarti> {
+  bool? _izin;
+  bool _taraniyor = false;
+
+  @override
+  void initState() {
+    super.initState();
+    SmsAktarici.izinVar().then((v) {
+      if (mounted) setState(() => _izin = v);
+    });
+  }
+
+  Future<void> _tara() async {
+    setState(() => _taraniyor = true);
+    final eklenen = await SmsAktarici.tara(widget.me, zorla: true);
+    if (!mounted) return;
+    setState(() => _taraniyor = false);
+    showInfo(
+        context,
+        eklenen.isEmpty
+            ? 'Yeni deneme sonucu bulunamadı.'
+            : '${eklenen.length} deneme eklendi:\n${eklenen.join('\n')}');
+  }
+
+  Future<void> _ac() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.sms_outlined, size: 36),
+        title: const Text('Deneme sonuçlarını otomatik aktar'),
+        content: const Text(
+            'Uygulama, telefonundaki SMS\'lerden yalnızca "${SmsAktarici.gonderen}" '
+            'adıyla gelen deneme sonuçlarını okur ve öğrencinin adına göre ilgili '
+            'öğrenciye ekler.\n\nBaşka mesajlar işlenmez, hiçbir mesaj gönderilmez '
+            'ya da silinmez. Bunun için Android SMS okuma izni isteyecek.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Vazgeç')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('İzin ver')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final izin = await SmsAktarici.izinIste();
+    if (!mounted) return;
+    setState(() => _izin = izin);
+    if (izin) {
+      await _tara();
+    } else {
+      showInfo(context,
+          'İzin verilmedi. Ayarlar > Uygulamalar > Eğitim Takip > İzinler > SMS bölümünden açabilirsiniz.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_izin == null) return const SizedBox.shrink();
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: _yesil.withValues(alpha: 0.12),
+          child: Icon(_izin! ? Icons.mark_email_read_outlined : Icons.sms_outlined,
+              color: _yesil),
+        ),
+        title: Text(_izin!
+            ? 'SMS aktarımı açık'
+            : 'Kurum SMS\'lerini otomatik aktar'),
+        subtitle: Text(_izin!
+            ? '${SmsAktarici.gonderen} sonuçları uygulama her açıldığında eklenir.'
+            : '${SmsAktarici.gonderen}\'den gelen deneme sonuçları kendiliğinden eklensin.'),
+        trailing: _taraniyor
+            ? const SizedBox(
+                width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 3))
+            : FilledButton.tonal(
+                onPressed: _izin! ? _tara : _ac,
+                child: Text(_izin! ? 'Tara' : 'Aç'),
+              ),
+      ),
+    );
+  }
+}
+

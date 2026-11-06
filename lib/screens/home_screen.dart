@@ -4,6 +4,7 @@ import '../models.dart';
 import '../services/db.dart';
 import '../services/guncelleme.dart';
 import '../services/notifications.dart';
+import '../services/sms_aktarici.dart';
 import '../widgets/common.dart';
 import 'student_screen.dart';
 
@@ -16,7 +17,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   late Stream<List<Student>> _stream;
   late OdevIzleyici _izleyici;
 
@@ -25,10 +26,29 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _stream = Db.myStudents(widget.me);
     _izleyici = OdevIzleyici(widget.me)..baslat();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Bildirim.izinIste();
       if (mounted) await Guncelleme.kontrolEt(context);
+      if (mounted) await _smsTara();
     });
+  }
+
+  /// Kurum SMS'lerindeki yeni deneme sonuçlarını sessizce ekler.
+  Future<void> _smsTara() async {
+    final eklenen = await SmsAktarici.tara(widget.me);
+    if (eklenen.isNotEmpty && mounted) {
+      showInfo(
+          context,
+          eklenen.length == 1
+              ? 'Yeni deneme eklendi: ${eklenen.first}'
+              : '${eklenen.length} yeni deneme sonucu eklendi.');
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _smsTara();
   }
 
   @override
@@ -43,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _izleyici.durdur();
     super.dispose();
   }
