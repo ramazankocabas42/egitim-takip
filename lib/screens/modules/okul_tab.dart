@@ -167,7 +167,7 @@ class _OkulTabState extends State<OkulTab> {
 
   Future<void> _eOkuldanEsitle() async {
     final sonuc = await Navigator.of(context).push<EkranSonucu>(
-        MaterialPageRoute(builder: (_) => const EOkulEkrani()));
+        MaterialPageRoute(builder: (_) => EOkulEkrani(ogrenciAdi: widget.student.name)));
     if (sonuc == null || sonuc.bos || !mounted) return;
     await _onizlemeGoster(sonuc);
   }
@@ -292,9 +292,8 @@ class _OkulTabState extends State<OkulTab> {
         const Padding(
           padding: EdgeInsets.fromLTRB(4, 6, 4, 10),
           child: Text(
-            'e-Okul uygulama içinde açılır. Girişi siz yaparsınız; T.C. no ve okul no '
-            'uygulamada saklanmaz. Sınav Tarihleri, Not Bilgileri ve Yıl Sonu Notları '
-            'sayfalarını açıp Eşitle\'ye basın.',
+            'e-Devlet ile giriş yapıp öğrenciyi seçin; uygulama sınav tarihlerini, notları '
+            've yıl sonu notlarını kendisi okur. Giriş bilgileri uygulamada saklanmaz.',
             style: TextStyle(fontSize: 12),
           ),
         ),
@@ -750,19 +749,21 @@ class _AktarimOnizlemeState extends State<_AktarimOnizleme> {
       for (var i = 0; i < s.notlar.length; i++) {
         if (!_notSec[i]) continue;
         final n = s.notlar[i];
+        final donem = n.donem ?? _donem;
         // Aynı ders/tür/sıra/dönem varsa notunu güncelle
         OkulSinav? eslesen;
         for (final m in widget.mevcut) {
-          if (m.ders == n.ders && m.tur == n.tur && m.sira == n.sira && m.donem == _donem) {
+          if (m.ders == n.ders && m.tur == n.tur && m.sira == n.sira && m.donem == donem) {
             eslesen = m;
           }
         }
+        if (eslesen != null && eslesen.not == n.not) continue; // değişmemiş
         await OkulDb.sinavKaydet(sid, me,
             id: eslesen?.id,
             ders: n.ders,
             tur: n.tur,
             sira: n.sira,
-            donem: _donem,
+            donem: donem,
             tarih: eslesen?.tarih,
             not: n.not);
         adet++;
@@ -816,7 +817,9 @@ class _AktarimOnizlemeState extends State<_AktarimOnizleme> {
                     ),
                   if (s.notlar.isNotEmpty) ...[
                     _Baslik('Notlar',
-                        trailing: SegmentedButton<int>(
+                        trailing: s.notlar.every((n) => n.donem != null)
+                            ? null
+                            : SegmentedButton<int>(
                           showSelectedIcon: false,
                           style: const ButtonStyle(visualDensity: VisualDensity.compact),
                           segments: const [
@@ -832,6 +835,7 @@ class _AktarimOnizlemeState extends State<_AktarimOnizleme> {
                         onChanged: (v) => setState(() => _notSec[i] = v ?? false),
                         title: Text(s.notlar[i].ders),
                         subtitle: Text(
+                            '${s.notlar[i].donem != null ? '${s.notlar[i].donem}. dönem • ' : ''}'
                             '${s.notlar[i].sira}. ${switch (s.notlar[i].tur) {
                           'performans' => 'Performans',
                           'proje' => 'Proje',
