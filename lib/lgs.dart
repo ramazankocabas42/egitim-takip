@@ -234,3 +234,102 @@ String sureYaz(int dakika) {
   if (d == 0) return '$s sa';
   return '$s sa $d dk';
 }
+
+// ---------------------------------------------------------------------------
+// Kurum mesajından (SMS) deneme sonucu okuma
+// ---------------------------------------------------------------------------
+
+/// Dershane / kurs SMS'inden çıkarılan deneme sonucu.
+class KurumSonucu {
+  KurumSonucu({
+    required this.ad,
+    required this.kurum,
+    required this.tarih,
+    required this.puan,
+    required this.dersler,
+  });
+
+  final String ad;
+  final String kurum;
+  final DateTime? tarih;
+  final double? puan;
+  final Map<String, Dyb> dersler;
+}
+
+const _tr = 'a-zA-ZçğıöşüÇĞİÖŞÜ';
+
+/// Örnek: "... YAPILAN 8.SINIF MOZAİK TG-1 31.10.2026 DENEME SINAVI SONUCUNDA
+/// ... LGS:407,391 ... Tür:18D-2Y-17,33N/20,Mat:15D-3Y-14N/20, ...,
+/// T.C:10D-0Y-10N/10,Din:9D-1Y-8,67N/10,Yab:6D-3Y-5N/10 ... ŞEKLİNDEDİR. KURUM"
+/// Ders bulunamazsa null döner.
+KurumSonucu? kurumMesajiCoz(String metin) {
+  final m = metin.replaceAll('\n', ' ');
+  final dersRe = RegExp(
+    '(T[üu]r(?:k[çc]e)?|Mat(?:ematik)?|Fen(?:\\s*Bil[$_tr]*)?|T\\.?\\s?C\\.?|'
+    '[İIiı]nk[$_tr]*|Din(?:\\s*K[$_tr]*)?|Yab(?:anc[ıi]\\s*Dil)?|[İIiı]ng[$_tr]*)'
+    '\\s*:\\s*(\\d+)\\s*D\\s*-\\s*(\\d+)\\s*Y\\s*(?:-\\s*-?[\\d.,]+\\s*N)?\\s*(?:/\\s*(\\d+))?',
+    caseSensitive: false,
+  );
+  final dersler = <String, Dyb>{};
+  for (final x in dersRe.allMatches(m)) {
+    final k = x.group(1)!.toLowerCase().replaceAll(RegExp(r'[\s.]'), '');
+    String? ad;
+    if (k == 'tc' || k.contains('nk')) {
+      ad = 'T.C. İnkılap Tarihi';
+    } else if (k.startsWith('t')) {
+      ad = 'Türkçe';
+    } else if (k.startsWith('m')) {
+      ad = 'Matematik';
+    } else if (k.startsWith('f')) {
+      ad = 'Fen Bilimleri';
+    } else if (k.startsWith('d')) {
+      ad = 'Din Kültürü';
+    } else if (k.startsWith('y') || k.contains('ng')) {
+      ad = 'İngilizce';
+    }
+    if (ad == null || dersler.containsKey(ad)) continue;
+    final d = int.parse(x.group(2)!);
+    final y = int.parse(x.group(3)!);
+    final soru = int.tryParse(x.group(4) ?? '') ?? lgsDers(ad)?.soru ?? 0;
+    final b = soru - d - y;
+    dersler[ad] = Dyb(d, y, b < 0 ? 0 : b);
+  }
+  if (dersler.isEmpty) return null;
+
+  double? puan;
+  final p = RegExp(r'LGS\s*:\s*(\d{3}(?:[.,]\d+)?)', caseSensitive: false)
+          .firstMatch(m) ??
+      RegExp(r'PUAN\s*:?\s*(\d{3}(?:[.,]\d+)?)', caseSensitive: false).firstMatch(m);
+  if (p != null) {
+    puan = double.tryParse(p.group(1)!.replaceAll(',', '.'));
+    if (puan != null && (puan < 100 || puan > 500)) puan = null;
+  }
+
+  DateTime? tarih;
+  final t = RegExp(r'(\d{1,2})[./](\d{1,2})[./](\d{4})').firstMatch(m);
+  if (t != null) {
+    tarih = DateTime.tryParse(
+        '${t.group(3)}-${t.group(2)!.padLeft(2, '0')}-${t.group(1)!.padLeft(2, '0')}');
+  }
+
+  var ad = '';
+  final a = RegExp(r'YAPILAN\s+(.+?)\s+\d{1,2}[./]\d{1,2}[./]\d{4}', caseSensitive: false)
+          .firstMatch(m) ??
+      RegExp(r'YAPILAN\s+(.+?)\s+DENEME', caseSensitive: false).firstMatch(m);
+  if (a != null) ad = a.group(1)!.trim();
+
+  var kurum = '';
+  final k = RegExp('ŞEKL[İI]NDED[İI]R\\.?\\s*(.+)\$', caseSensitive: false)
+      .firstMatch(m.trim());
+  if (k != null) {
+    kurum = k.group(1)!.replaceAll(RegExp(r'\s+[A-Z]\d{2,}$'), '').trim();
+  }
+
+  return KurumSonucu(
+    ad: ad,
+    kurum: kurum,
+    tarih: tarih,
+    puan: puan,
+    dersler: dersler,
+  );
+}

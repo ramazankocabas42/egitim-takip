@@ -203,6 +203,19 @@ class _LgsTabState extends State<LgsTab> {
             ],
           ),
         ),
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: _yesil,
+            minimumSize: const Size.fromHeight(48),
+          ),
+          onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => DenemeGirisEkrani(
+                student: widget.student, me: widget.me, panodanAc: true),
+          )),
+          icon: const Icon(Icons.sms_outlined),
+          label: const Text('Kurum mesajından deneme ekle'),
+        ),
+        const SizedBox(height: 4),
         if (liste.isEmpty)
           const EmptyState(
             icon: Icons.assignment_outlined,
@@ -464,12 +477,20 @@ class _DenemeKarti extends StatelessWidget {
 // Deneme girişi
 // ---------------------------------------------------------------------------
 class DenemeGirisEkrani extends StatefulWidget {
-  const DenemeGirisEkrani(
-      {super.key, required this.student, required this.me, this.deneme});
+  const DenemeGirisEkrani({
+    super.key,
+    required this.student,
+    required this.me,
+    this.deneme,
+    this.panodanAc = false,
+  });
 
   final Student student;
   final AppUser me;
   final LgsDeneme? deneme;
+
+  /// Açılınca panodaki kurum mesajını otomatik okur.
+  final bool panodanAc;
 
   @override
   State<DenemeGirisEkrani> createState() => _DenemeGirisEkraniState();
@@ -488,6 +509,86 @@ class _DenemeGirisEkraniState extends State<DenemeGirisEkrani> {
       d.ad: DybDenetleyici(widget.deneme?.dersler[d.ad] ?? Dyb.bos),
   };
   bool _mesgul = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.panodanAc) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _panodan());
+    }
+  }
+
+  static String _baslikYap(String s) => s
+      .split(RegExp(r'\s+'))
+      .where((w) => w.isNotEmpty)
+      .map((w) {
+        final kucuk = w.replaceAll('I', 'ı').replaceAll('İ', 'i').toLowerCase();
+        final ilk = kucuk[0] == 'i' ? 'İ' : kucuk[0].toUpperCase();
+        return ilk + kucuk.substring(1);
+      })
+      .join(' ');
+
+  void _mesajUygula(String metin) {
+    final s = kurumMesajiCoz(metin);
+    if (s == null) {
+      showInfo(context,
+          'Mesajda ders sonuçları bulunamadı. "Tür:18D-2Y" gibi satırlar içeren mesajı yapıştırın.');
+      return;
+    }
+    setState(() {
+      if (s.ad.isNotEmpty) _ad.text = s.ad;
+      if (s.kurum.isNotEmpty) _yayin.text = _baslikYap(s.kurum);
+      if (s.tarih != null) _tarih = s.tarih!;
+      if (s.puan != null) {
+        _puan.text = s.puan!.toStringAsFixed(3).replaceAll(RegExp(r'\.?0+$'), '');
+      }
+      for (final d in lgsDersler) {
+        _d[d.ad]!.ayarla(s.dersler[d.ad] ?? Dyb.bos);
+      }
+    });
+    showInfo(context,
+        '${s.dersler.length} ders aktarıldı${s.puan != null ? ', puan ${s.puan}' : ''}. Kontrol edip kaydedin.');
+  }
+
+  Future<void> _panodan() async {
+    final veri = await Clipboard.getData(Clipboard.kTextPlain);
+    final metin = veri?.text ?? '';
+    if (!mounted) return;
+    if (metin.trim().isEmpty) {
+      showInfo(context, 'Panoda metin yok. Önce mesajı kopyalayın.');
+      return;
+    }
+    _mesajUygula(metin);
+  }
+
+  Future<void> _elleYapistir() async {
+    final c = TextEditingController();
+    final metin = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Kurum mesajı'),
+        content: TextField(
+          controller: c,
+          autofocus: true,
+          minLines: 5,
+          maxLines: 10,
+          decoration: const InputDecoration(
+            hintText: 'Kurumdan gelen deneme sonucu mesajını buraya yapıştırın',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Vazgeç')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, c.text),
+              child: const Text('Aktar')),
+        ],
+      ),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => c.dispose());
+    if (metin != null && mounted) _mesajUygula(metin);
+  }
 
   @override
   void dispose() {
@@ -557,6 +658,43 @@ class _DenemeGirisEkraniState extends State<DenemeGirisEkrani> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 120),
         children: [
+          Card(
+            color: _yesil.withValues(alpha: 0.08),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.sms_outlined, color: _yesil),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text('Kurum mesajından doldur',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 16)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                      'Dershaneden gelen sonuç mesajını kopyalayıp aşağıdaki düğmeye '
+                      'basın; puan, tarih ve tüm dersler otomatik dolar.'),
+                  const SizedBox(height: 10),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(backgroundColor: _yesil),
+                    onPressed: _panodan,
+                    icon: const Icon(Icons.content_paste),
+                    label: const Text('Kopyaladığım mesajı yapıştır'),
+                  ),
+                  TextButton(
+                    onPressed: _elleYapistir,
+                    child: const Text('Mesajı kendim yapıştıracağım'),
+                  ),
+                ],
+              ),
+            ),
+          ),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(14),
