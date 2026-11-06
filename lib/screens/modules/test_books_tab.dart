@@ -5,6 +5,7 @@ import '../../services/db.dart';
 import '../../services/kitap_katalog.dart';
 import '../../widgets/common.dart';
 import '../../widgets/kitap_bulucu.dart';
+import '../../widgets/kitaplik.dart';
 
 /// TEST KİTABI MODÜLÜ
 /// - "Test Kitabı Ekle" ile alınan kitap; konuları ve sayfa aralıklarıyla eklenir.
@@ -22,6 +23,7 @@ class TestBooksTab extends StatefulWidget {
 class _TestBooksTabState extends State<TestBooksTab> {
   late final LiveValue<List<TestBook>> _books =
       LiveValue(Db.testBooks(widget.student.id));
+  String _durum = 'devam';
 
   @override
   void dispose() {
@@ -41,26 +43,46 @@ class _TestBooksTabState extends State<TestBooksTab> {
           }
           if (_books.loading) return const Loading();
           final books = _books.value!;
-          if (books.isEmpty) {
-            return const EmptyState(
-              icon: Icons.library_books_outlined,
-              text: 'Henüz test kitabı yok.\n"Test Kitabı Ekle" butonuyla aldığınız '
-                  'kitabı konularıyla birlikte ekleyin.',
-            );
+          final sayilar = <String, int>{};
+          for (final b in books) {
+            sayilar[b.durumu] = (sayilar[b.durumu] ?? 0) + 1;
           }
+          final secili = books.where((b) => b.durumu == _durum).toList();
           return ListView(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 96),
-            children: books
-                .map((b) => _TestBookCard(
+            children: [
+              DurumSecici(
+                secili: _durum,
+                sayilar: sayilar,
+                degisti: (d) => setState(() => _durum = d),
+              ),
+              const SizedBox(height: 8),
+              if (secili.isEmpty)
+                EmptyState(
+                  icon: Icons.library_books_outlined,
+                  text: switch (_durum) {
+                    'istek' => 'Almayı düşündüğün test kitaplarını buraya ekle.\n'
+                        '"Test Kitabı Ekle"de "Henüz almadım"ı seç.',
+                    'bitti' => 'Henüz tamamlanan test kitabı yok.',
+                    _ => 'Henüz test kitabı yok.\n"Test Kitabı Ekle" butonuyla aldığınız '
+                        'kitabı konularıyla birlikte ekleyin.',
+                  },
+                )
+              else
+                ...secili.map((b) => _TestBookCard(
                       book: b,
+                      onDurum: (d) => runSafe(
+                          context,
+                          () => Db.setDurum(
+                              widget.student.id, 'testBooks', b.id, d)),
                       onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => TestBookDetailScreen(
                             student: widget.student,
                             me: widget.me,
                             bookId: b.id),
                       )),
-                    ))
-                .toList(),
+                    )),
+            ],
           );
         },
       ),
@@ -78,10 +100,12 @@ class _TestBooksTabState extends State<TestBooksTab> {
 }
 
 class _TestBookCard extends StatelessWidget {
-  const _TestBookCard({required this.book, required this.onTap});
+  const _TestBookCard(
+      {required this.book, required this.onTap, required this.onDurum});
 
   final TestBook book;
   final VoidCallback onTap;
+  final ValueChanged<String> onDurum;
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +163,10 @@ class _TestBookCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right),
+              PopupMenuButton<String>(
+                onSelected: (v) => onDurum(v.substring(6)),
+                itemBuilder: (_) => durumMenuOgeleri(book.durumu),
+              ),
             ],
           ),
         ),
@@ -572,6 +599,7 @@ class _AddTestBookScreenState extends State<AddTestBookScreen> {
   final List<_TopicRow> _rows = [_TopicRow()];
   bool _busy = false;
   String _isbn = '';
+  bool _istek = false;
 
   /// Barkoddan / aramadan gelen kitap: formu (konular dahil) doldurur,
   /// bilgiler tamsa hemen kaydeder.
@@ -654,7 +682,8 @@ class _AddTestBookScreenState extends State<AddTestBookScreen> {
           subject: subject,
           totalPages: total,
           topics: topics,
-          isbn: _isbn),
+          isbn: _isbn,
+          durum: _istek ? 'istek' : 'devam'),
       success: 'Test kitabı eklendi: $title',
     );
     if (ok) {
@@ -707,6 +736,13 @@ class _AddTestBookScreenState extends State<AddTestBookScreen> {
                 labelText: 'Toplam sayfa sayısı',
                 helperText: 'Sayfa sayfa işaretleme için gereklidir.',
                 border: OutlineInputBorder()),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _istek,
+            onChanged: (v) => setState(() => _istek = v),
+            title: const Text('Henüz almadım'),
+            subtitle: const Text('"Almayı düşündüklerim" listesine ekle'),
           ),
           const SectionTitle('Konular'),
           const Text(

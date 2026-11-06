@@ -38,6 +38,10 @@ class Db {
     'readingLogs',
     'testBooks',
     'testResults',
+    'soruGirisleri',
+    'lgsDenemeleri',
+    'haftalikPlan',
+    'ayarlar',
   ];
 
   // -------------------------------------------------------------------------
@@ -359,9 +363,11 @@ class Db {
     required String author,
     required int totalPages,
     String isbn = '',
+    String durum = 'devam',
   }) =>
       _sub(sid, 'books').add({
         if (isbn.isNotEmpty) 'isbn': isbn,
+        'durum': durum,
         'title': title,
         'author': author,
         'totalPages': totalPages,
@@ -417,14 +423,26 @@ class Db {
     batch.update(_sub(sid, 'books').doc(book.id), {
       'currentPage': toPage,
       'finished': book.totalPages > 0 && toPage >= book.totalPages,
+      'durum': book.totalPages > 0 && toPage >= book.totalPages ? 'bitti' : 'devam',
       'updatedAt': _now(),
     });
     await batch.commit();
   }
 
+  /// Kitabın kitaplık durumunu değiştirir (istek / devam / bitti).
+  static Future<void> setDurum(String sid, String coll, String id, String durum,
+          {Book? book}) =>
+      _sub(sid, coll).doc(id).update({
+        'durum': durum,
+        if (coll == 'books') 'finished': durum == 'bitti',
+        if (book != null && durum == 'bitti' && book.totalPages > 0)
+          'currentPage': book.totalPages,
+      });
+
   static Future<void> setBookFinished(String sid, Book book, bool finished) =>
       _sub(sid, 'books').doc(book.id).update({
         'finished': finished,
+        'durum': finished ? 'bitti' : 'devam',
         if (finished && book.totalPages > 0) 'currentPage': book.totalPages,
       });
 
@@ -451,9 +469,11 @@ class Db {
     required int totalPages,
     required List<Topic> topics,
     String isbn = '',
+    String durum = 'devam',
   }) =>
       _sub(sid, 'testBooks').add({
         if (isbn.isNotEmpty) 'isbn': isbn,
+        'durum': durum,
         'title': title,
         'publisher': publisher,
         'subject': subject,

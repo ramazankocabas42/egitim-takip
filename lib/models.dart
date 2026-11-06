@@ -167,9 +167,14 @@ class Book {
     required this.currentPage,
     required this.finished,
     required this.createdBy,
+    this.durum = '',
   });
 
   final String id;
+  final String durum;
+
+  /// 'istek' (almayı düşündüklerim), 'devam' ya da 'bitti'
+  String get durumu => durum.isNotEmpty ? durum : (finished ? 'bitti' : 'devam');
   final String title;
   final String author;
   final int totalPages;
@@ -190,6 +195,7 @@ class Book {
       currentPage: _int(m['currentPage']),
       finished: m['finished'] == true,
       createdBy: _str(m['createdBy']),
+      durum: _str(m['durum']),
     );
   }
 }
@@ -269,10 +275,15 @@ class TestBook {
     required this.completedTopics,
     required this.createdBy,
     this.isbn = '',
+    this.durum = '',
   });
 
   final String id;
   final String isbn;
+  final String durum;
+
+  /// 'istek' (almayı düşündüklerim), 'devam' ya da 'bitti'
+  String get durumu => durum.isNotEmpty ? durum : (progress >= 1 ? 'bitti' : 'devam');
   final String title;
   final String publisher;
   final String subject;
@@ -316,6 +327,7 @@ class TestBook {
       completedTopics: _strList(m['completedTopics']).toSet(),
       createdBy: _str(m['createdBy']),
       isbn: _str(m['isbn']),
+      durum: _str(m['durum']),
     );
   }
 }
@@ -366,3 +378,10 @@ class TestResult {
     );
   }
 }
+
+/// Kitaplık durumları.
+const kitapDurumlari = <String, String>{
+  'istek': 'Almayı düşündüklerim',
+  'devam': 'Devam edenler',
+  'bitti': 'Tamamlananlar',
+};
