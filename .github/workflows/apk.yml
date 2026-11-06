@@ -32,10 +32,7 @@ jobs:
       - name: Android ayarları (minSdk 24, uygulama adı, bildirim izinleri, imza anahtarı)
         run: |
           python3 ci/android_ayarla.py .
-          # Her derlemede aynı imza kullanılsın ki güncellemeler eskisinin üzerine kurulabilsin.
-          mkdir -p ~/.android
-          cp ci/debug.keystore ~/.android/debug.keystore
-          grep -n "minSdk\|Desugaring" android/app/build.gradle* || true
+          grep -n "minSdk\|Desugaring\|keystore" android/app/build.gradle* || true
 
       - name: Paketleri güncelle
         # Bildirim paketi sabit ana sürümde tutulur (kod onun API'sine göre yazıldı).
@@ -46,8 +43,11 @@ jobs:
 
       - name: APK derle
         run: |
-          flutter build apk --release
+          flutter build apk --release --build-number=${{ github.run_number }}
           mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/egitim-takip.apk
+
+      - name: İmza kontrolü (güncellemeler eskisinin üzerine kurulabilsin)
+        run: python3 ci/imza_kontrol.py build/app/outputs/flutter-apk/egitim-takip.apk ci/debug.keystore
 
       - name: APK'yı yayınla
         uses: softprops/action-gh-release@v2

@@ -82,6 +82,33 @@ if "CoreLibraryDesugaringEnabled" not in g and "coreLibraryDesugaringEnabled" no
         sys.exit("compileOptions bloğu bulunamadı")
     g = g.replace("compileOptions {", "compileOptions {\n        " + satir, 1)
 
+# Sabit imza: her derleme ci/debug.keystore ile imzalanır, böylece yeni sürüm
+# eskisinin üzerine kurulabilir.
+if "ci/debug.keystore" not in g:
+    if kotlin_dsl:
+        imza = """    signingConfigs {
+        getByName("debug") {
+            storeFile = file("../../ci/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+"""
+    else:
+        imza = """    signingConfigs {
+        debug {
+            storeFile file('../../ci/debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+"""
+    g, n = re.subn(r"(\nandroid \{\n)", lambda x: x.group(1) + imza, g, count=1)
+    if n != 1:
+        sys.exit("android { bloğu bulunamadı")
+
 if "desugar_jdk_libs" not in g:
     bagimlilik = (
         f'    coreLibraryDesugaring("{DESUGAR}")'
