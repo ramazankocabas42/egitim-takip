@@ -122,6 +122,7 @@ class OneriMotoru {
     required this.odevler,
     required this.plan,
     required this.programHaftasi,
+    this.duzen,
     DateTime? simdi,
   }) : simdi = simdi ?? DateTime.now();
 
@@ -132,6 +133,7 @@ class OneriMotoru {
   final List<Homework> odevler;
   final HaftalikPlan? plan; // bu hafta
   final List<GunAnalizi>? programHaftasi; // etkinlik girilmediyse null
+  final GunDuzeni? duzen;
   final DateTime simdi;
 
   static const gunlukSoruHedefi = 60;
@@ -440,6 +442,22 @@ class OneriMotoru {
     } else {
       oneriler.add(Oneri(Onem.bilgi, Icons.schedule,
           'Program sekmesine okul ve dershane saatlerini girerseniz boş zamanlar ve çalışma saatleri hesaplanır.'));
+    }
+
+    final dz = duzen;
+    if (dz != null) {
+      final haftalikTel = dz.telefonHaftaIci * 5 + dz.telefonHaftaSonu * 2;
+      if (dz.telefonHaftaIci > 120 || dz.telefonHaftaSonu > 180) {
+        oneriler.add(Oneri(Onem.onemli, Icons.smartphone,
+            'Telefon / ekran süresi haftada ${sureYaz(haftalikTel)}. Bunun bir kısmını çalışmaya '
+            'ayırmak haftada ${sureYaz((haftalikTel - 5 * 90 - 2 * 120).clamp(0, 9999))} ek çalışma zamanı kazandırır.'));
+      } else if (haftalikCalisma != null &&
+          haftalikCalisma < 8 * 60 &&
+          haftalikTel >= 5 * 60) {
+        oneriler.add(Oneri(Onem.bilgi, Icons.smartphone,
+            'Çalışma süresi az, telefon süresi haftada ${sureYaz(haftalikTel)}. Günde 30 dk '
+            'kısaltmak haftada 3,5 saat çalışma zamanı demek.'));
+      }
     }
 
     if (planSkor != null && planSkor < 50) {

@@ -82,6 +82,7 @@ class _OnerilerTabState extends State<OnerilerTab> {
               ? null
               : ZamanMotoru(etk, _duzen.value ?? const GunDuzeni())
                   .hafta(plan: _plan.value),
+          duzen: _duzen.value,
         ).rapor();
         return _govde(context, rapor);
       },

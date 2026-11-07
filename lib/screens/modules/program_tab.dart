@@ -11,11 +11,13 @@ const _yesil = Color(0xFF00897B);
 const _calismaRenk = Color(0xFF7E57C2);
 final _bosRenk = Colors.green.shade300;
 const _yemekRenk = Color(0xFFBCAAA4);
+const _telefonRenk = Color(0xFF0288D1);
 
 Color _renk(String tur) => switch (tur) {
       'calisma' => _calismaRenk,
       'bos' => _bosRenk,
       'yemek' => _yemekRenk,
+      'telefon' => _telefonRenk,
       _ => etkinlikTuru(tur).renk,
     };
 
@@ -23,6 +25,7 @@ IconData _ikon(String tur) => switch (tur) {
       'calisma' => Icons.edit_note,
       'bos' => Icons.weekend_outlined,
       'yemek' => Icons.restaurant,
+      'telefon' => Icons.smartphone,
       _ => etkinlikTuru(tur).ikon,
     };
 
@@ -191,6 +194,7 @@ class _ProgramTabState extends State<ProgramTab> {
                     for (final t in {...etk.map((e) => e.tur)})
                       _Lejant(_renk(t), etkinlikTuru(t).ad),
                     _Lejant(_bosRenk, 'Boş'),
+                    const _Lejant(_telefonRenk, 'Telefon / ekran'),
                     const _Lejant(_calismaRenk, 'Önerilen çalışma'),
                   ],
                 ),
@@ -272,7 +276,9 @@ class _ProgramTabState extends State<ProgramTab> {
             subtitle: Text('Yemek ${saatYaz(duzen.yemekBas)} (${duzen.yemekDk} dk) • yol '
                 '${duzen.yolDk} dk • dönüş molası ${duzen.dinlenmeDk} dk\n'
                 'Günlük çalışma hedefi: hafta içi ${sureYaz(duzen.hedefHaftaIci)}, '
-                'hafta sonu ${sureYaz(duzen.hedefHaftaSonu)}'),
+                'hafta sonu ${sureYaz(duzen.hedefHaftaSonu)}\n'
+                'Telefon / ekran süresi: hafta içi ${sureYaz(duzen.telefonHaftaIci)}, '
+                'hafta sonu ${sureYaz(duzen.telefonHaftaSonu)}'),
             isThreeLine: true,
             trailing: const Icon(Icons.edit_outlined),
             onTap: () => _duzenDuzenle(duzen),
@@ -299,6 +305,8 @@ class _ProgramTabState extends State<ProgramTab> {
       durum = 'Şu an çalışma zamanı: ${su.ad} (${saatYaz(su.bit)}\'e kadar)';
     } else if (su.tur == 'bos') {
       durum = 'Şu an serbest zaman';
+    } else if (su.tur == 'telefon') {
+      durum = 'Şu an telefon / ekran zamanı (${saatYaz(su.bit)}\'e kadar)';
     } else {
       durum = 'Şu an: ${su.ad} (${saatYaz(su.bit)}\'e kadar)';
     }
@@ -323,7 +331,8 @@ class _ProgramTabState extends State<ProgramTab> {
                 const SizedBox(height: 4),
                 Text(durum),
                 const SizedBox(height: 4),
-                Text('Etkinlik ${sureYaz(g.etkinlikDk)} • boş ${sureYaz(g.bosDk)}',
+                Text('Etkinlik ${sureYaz(g.etkinlikDk)} • boş ${sureYaz(g.bosDk)}'
+                    '${g.telefonDk > 0 ? ' • telefon ${sureYaz(g.telefonDk)}' : ''}',
                     style: const TextStyle(fontSize: 12.5)),
                 if (sonraki.isNotEmpty) ...[
                   const SizedBox(height: 6),
@@ -857,6 +866,34 @@ class _DuzenSheetState extends State<_DuzenSheet> {
         const Divider(),
         _sureSatiri('hedefHaftaIci', 'Günlük çalışma hedefi (hafta içi)', 30, 0, 480),
         _sureSatiri('hedefHaftaSonu', 'Günlük çalışma hedefi (hafta sonu)', 30, 0, 600),
+        const Divider(),
+        const Padding(
+          padding: EdgeInsets.only(top: 4),
+          child: Row(children: [
+            Icon(Icons.smartphone, color: _telefonRenk),
+            SizedBox(width: 8),
+            Text('Telefon / ekran süresi', style: TextStyle(fontWeight: FontWeight.w700)),
+          ]),
+        ),
+        _sureSatiri('telefonHaftaIci', 'Günlük (hafta içi)', 15, 0, 360),
+        _sureSatiri('telefonHaftaSonu', 'Günlük (hafta sonu)', 15, 0, 480),
+        Wrap(
+          spacing: 6,
+          children: [
+            for (final dk in const [30, 60, 90, 120, 180])
+              ActionChip(
+                label: Text(sureYaz(dk)),
+                onPressed: () => setState(() {
+                  _d['telefonHaftaIci'] = dk;
+                  _d['telefonHaftaSonu'] = dk + 30;
+                }),
+              ),
+          ],
+        ),
+        const Text('Telefon süresi serbest zamandan ayrılır ve yatmadan en az 45 dk önce '
+            'bitecek şekilde yerleştirilir. Uzmanlar ders dışı ekran süresinin günde 2 saati '
+            'geçmemesini önerir.',
+            style: TextStyle(fontSize: 11.5)),
         const SizedBox(height: 12),
         FilledButton(
           style: FilledButton.styleFrom(

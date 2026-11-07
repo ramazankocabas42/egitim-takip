@@ -84,6 +84,8 @@ class GunDuzeni {
     this.dinlenmeDk = 30,
     this.hedefHaftaIci = 180,
     this.hedefHaftaSonu = 300,
+    this.telefonHaftaIci = 60,
+    this.telefonHaftaSonu = 120,
   });
 
   final int haftaIciKalkis, haftaIciYatma, haftaSonuKalkis, haftaSonuYatma;
@@ -91,11 +93,13 @@ class GunDuzeni {
   final int yolDk; // etkinlik öncesi/sonrası yol, hazırlık
   final int dinlenmeDk; // etkinlik dönüşü mola
   final int hedefHaftaIci, hedefHaftaSonu; // günlük çalışma hedefi (dk)
+  final int telefonHaftaIci, telefonHaftaSonu; // günlük telefon / ekran süresi (dk)
 
   bool haftaSonu(int g) => g >= 5;
   int kalkis(int g) => haftaSonu(g) ? haftaSonuKalkis : haftaIciKalkis;
   int yatma(int g) => haftaSonu(g) ? haftaSonuYatma : haftaIciYatma;
   int hedef(int g) => haftaSonu(g) ? hedefHaftaSonu : hedefHaftaIci;
+  int telefon(int g) => haftaSonu(g) ? telefonHaftaSonu : telefonHaftaIci;
 
   Map<String, dynamic> toMap() => {
         'haftaIciKalkis': haftaIciKalkis,
@@ -108,6 +112,8 @@ class GunDuzeni {
         'dinlenmeDk': dinlenmeDk,
         'hedefHaftaIci': hedefHaftaIci,
         'hedefHaftaSonu': hedefHaftaSonu,
+        'telefonHaftaIci': telefonHaftaIci,
+        'telefonHaftaSonu': telefonHaftaSonu,
       };
 
   factory GunDuzeni.fromMap(Map<String, dynamic>? m) {
@@ -124,6 +130,8 @@ class GunDuzeni {
       dinlenmeDk: _int(m['dinlenmeDk'], v.dinlenmeDk),
       hedefHaftaIci: _int(m['hedefHaftaIci'], v.hedefHaftaIci),
       hedefHaftaSonu: _int(m['hedefHaftaSonu'], v.hedefHaftaSonu),
+      telefonHaftaIci: _int(m['telefonHaftaIci'], v.telefonHaftaIci),
+      telefonHaftaSonu: _int(m['telefonHaftaSonu'], v.telefonHaftaSonu),
     );
   }
 
@@ -139,7 +147,7 @@ class Aralik {
   final int bas, bit;
   final String ad;
 
-  /// Etkinlik türü; 'bos', 'calisma', 'yemek', 'hazirlik', 'yol'
+  /// Etkinlik türü; 'bos', 'calisma', 'telefon', 'yemek'
   final String tur;
   int get sure => bit - bas;
 }
@@ -152,6 +160,7 @@ class GunAnalizi {
     required this.dolu,
     required this.bos,
     required this.calisma,
+    this.telefon = const [],
   });
 
   final int gun;
@@ -159,29 +168,36 @@ class GunAnalizi {
   final List<Aralik> dolu; // etkinlikler (+ yemek)
   final List<Aralik> bos; // yol/dinlenme payları düşülmüş boş zaman
   final List<Aralik> calisma; // önerilen çalışma blokları
+  final List<Aralik> telefon; // telefon / ekran süresi (serbest zamandan)
 
   int sureOf(String tur) =>
       dolu.where((a) => a.tur == tur).fold(0, (s, a) => s + a.sure);
   int get bosDk => bos.fold(0, (s, a) => s + a.sure);
   int get calismaDk => calisma.fold(0, (s, a) => s + a.sure);
+  int get telefonDk => telefon.fold(0, (s, a) => s + a.sure);
   int get etkinlikDk =>
       dolu.where((a) => a.tur != 'yemek').fold(0, (s, a) => s + a.sure);
 
-  /// Zaman çizelgesi için hepsi sıralı (boşlar çalışma dışı kalan kısım).
-  List<Aralik> get akis {
-    final l = <Aralik>[...dolu, ...calisma];
-    // Boş zamanın çalışma dışında kalan kısımları
+  /// Boş zamanın çalışma ve telefon dışında kalan kısımları.
+  List<Aralik> get serbest => kalanBos(bos, [...calisma, ...telefon]);
+
+  static List<Aralik> kalanBos(List<Aralik> bos, List<Aralik> dolan) {
+    final out = <Aralik>[];
+    final d = List.of(dolan)..sort((a, b) => a.bas.compareTo(b.bas));
     for (final b in bos) {
       var t = b.bas;
-      for (final c in calisma.where((c) => c.bas >= b.bas && c.bit <= b.bit)) {
-        if (c.bas > t) l.add(Aralik(t, c.bas, tur: 'bos'));
+      for (final c in d.where((c) => c.bas >= b.bas && c.bit <= b.bit)) {
+        if (c.bas > t) out.add(Aralik(t, c.bas, tur: 'bos'));
         t = c.bit;
       }
-      if (b.bit > t) l.add(Aralik(t, b.bit, tur: 'bos'));
+      if (b.bit > t) out.add(Aralik(t, b.bit, tur: 'bos'));
     }
-    l.sort((a, b) => a.bas.compareTo(b.bas));
-    return l;
+    return out;
   }
+
+  /// Zaman çizelgesi için hepsi sıralı.
+  List<Aralik> get akis =>
+      [...dolu, ...calisma, ...telefon, ...serbest]..sort((a, b) => a.bas.compareTo(b.bas));
 }
 
 class ZamanMotoru {
@@ -223,10 +239,13 @@ class ZamanMotoru {
     }
     if (yatma - t >= enAzPencere) bos.add(Aralik(t, yatma, tur: 'bos'));
 
-    // Çalışma blokları: hedef süreye kadar, en az 1 saat serbest zaman kalsın.
+    // Çalışma blokları: hedef süreye kadar; telefon süresi ve en az
+    // 1 saat serbest zaman ayrıldıktan sonra.
     final toplamBos = bos.fold(0, (s, a) => s + a.sure);
+    final telefonHakki = duzen.telefon(g);
+    final ayrilan = telefonHakki > 60 ? telefonHakki : 60;
     var kalan = duzen.hedef(g);
-    if (toplamBos - kalan < 60) kalan = toplamBos - 60;
+    if (toplamBos - kalan < ayrilan) kalan = toplamBos - ayrilan;
     final calisma = <Aralik>[];
     var p = 0;
     // Akşamüstü/akşam pencereleri önce (okul öncesi sabah en sona).
@@ -251,8 +270,37 @@ class ZamanMotoru {
       }
     }
     calisma.sort((a, b) => a.bas.compareTo(b.bas));
+
+    // Telefon / ekran süresi: kalan serbest zamana, çalışmadan sonra ve
+    // yatmadan en az 45 dk önce bitecek şekilde (uyku düzeni için).
+    final telefon = <Aralik>[];
+    var tKalan = telefonHakki;
+    final serbest = GunAnalizi.kalanBos(bos, calisma)
+        .map((a) => Aralik(a.bas, a.bit > yatma - 45 ? yatma - 45 : a.bit, tur: 'bos'))
+        .where((a) => a.sure >= 15)
+        .toList()
+      ..sort((a, b) {
+        // Önce çalışma bloklarından sonra gelen, sonra büyük pencereler
+        final sonA = calisma.any((c) => c.bit <= a.bas) ? 0 : 1;
+        final sonB = calisma.any((c) => c.bit <= b.bas) ? 0 : 1;
+        if (sonA != sonB) return sonA.compareTo(sonB);
+        return b.sure.compareTo(a.sure);
+      });
+    for (final a in serbest) {
+      if (tKalan < 10) break;
+      final dk = a.sure < tKalan ? a.sure : tKalan;
+      telefon.add(Aralik(a.bas, a.bas + dk, ad: 'Telefon / ekran', tur: 'telefon'));
+      tKalan -= dk;
+    }
+    telefon.sort((a, b) => a.bas.compareTo(b.bas));
     return GunAnalizi(
-        gun: g, kalkis: kalkis, yatma: yatma, dolu: dolu, bos: bos, calisma: calisma);
+        gun: g,
+        kalkis: kalkis,
+        yatma: yatma,
+        dolu: dolu,
+        bos: bos,
+        calisma: calisma,
+        telefon: telefon);
   }
 
   List<GunAnalizi> hafta({HaftalikPlan? plan}) => [
