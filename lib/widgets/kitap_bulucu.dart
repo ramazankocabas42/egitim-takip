@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../services/kapak_okuyucu.dart';
 import '../services/kitap_katalog.dart';
 
 /// Kitap ekleme formlarının üstündeki arama kutusu: ad / yayınevi / ISBN
@@ -24,6 +26,7 @@ class _KitapBulucuState extends State<KitapBulucu> {
   bool _yukleniyor = false;
   bool _arandi = false;
   List<KatalogKitap> _sonuclar = const [];
+  String? _bilgi; // fotoğraf / karekod sonrası açıklama
 
   @override
   void dispose() {
@@ -34,6 +37,7 @@ class _KitapBulucuState extends State<KitapBulucu> {
 
   void _yazildi(String v) {
     _gecikme?.cancel();
+    _bilgi = null;
     if (v.trim().length < 2) {
       setState(() {
         _sonuclar = const [];
@@ -64,6 +68,10 @@ class _KitapBulucuState extends State<KitapBulucu> {
       MaterialPageRoute(builder: (_) => const BarkodTaraEkrani()),
     );
     if (isbn == null || !mounted) return;
+    if (isbn.startsWith('q:')) {
+      await _karekodIcerigi(isbn.substring(2));
+      return;
+    }
     final no = ++_istek;
     setState(() {
       _yukleniyor = true;
@@ -75,6 +83,132 @@ class _KitapBulucuState extends State<KitapBulucu> {
     if (!mounted || no != _istek) return;
     setState(() => _yukleniyor = false);
     widget.onSecildi(k ?? KatalogKitap(isbn: isbn, title: ''));
+  }
+
+  /// ISBN içermeyen karekod: adres ya da yazıdan anahtar kelimelerle ara.
+  Future<void> _karekodIcerigi(String icerik) async {
+    var sorgu = icerik.trim();
+    final uri = Uri.tryParse(sorgu);
+    if (uri != null && uri.hasScheme && uri.host.isNotEmpty) {
+      final parcalar = [
+        ...uri.pathSegments,
+        ...uri.queryParameters.values,
+      ]
+          .expand((p) => p.split(RegExp(r'[-_+./]')))
+          .where((w) =>
+              w.length >= 2 &&
+              RegExp(r'[A-Za-zÇĞİÖŞÜçğıöşü]').hasMatch(w) &&
+              !RegExp(r'^(html?|php|aspx?|www|index|urun|product|p|kitap)$', caseSensitive: false)
+                  .hasMatch(w) &&
+              !RegExp(r'[0-9a-f]{12,}', caseSensitive: false).hasMatch(w))
+          .toList();
+      sorgu = parcalar.take(8).join(' ');
+      if (sorgu.isEmpty) {
+        setState(() => _bilgi = 'Karekodda kitap bilgisi yok (${uri.host}). '
+            'Kitabın adını yazın ya da kapağın fotoğrafını çekin.');
+        return;
+      }
+    }
+    if (sorgu.length > 80) sorgu = sorgu.substring(0, 80);
+    setState(() {
+      _sorgu.text = sorgu;
+      _bilgi = 'Karekoddan okunan: "$sorgu"';
+    });
+    await _ara(sorgu);
+  }
+
+  /// Kapak fotoğrafı: barkod / ISBN yazısı varsa onunla, yoksa kapaktaki
+  /// yazılarla (kitap adı, yayınevi) katalogda ve web'de arar.
+  Future<void> _fotografla() async {
+    FocusScope.of(context).unfocus();
+    final XFile? foto;
+    try {
+      foto = await ImagePicker().pickImage(
+          source: ImageSource.camera, maxWidth: 1800, imageQuality: 90);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Kamera açılamadı: $e')));
+      }
+      return;
+    }
+    if (foto == null || !mounted) return;
+    final no = ++_istek;
+    setState(() {
+      _yukleniyor = true;
+      _sonuclar = const [];
+      _arandi = false;
+      _bilgi = 'Fotoğraf okunuyor...';
+    });
+    final kapak = await KapakOkuyucu.oku(foto.path);
+    if (!mounted || no != _istek) return;
+
+    if (kapak.isbn != null) {
+      final k = await KitapKatalog.isbnIleBul(kapak.isbn!);
+      if (!mounted || no != _istek) return;
+      if (k != null && k.title.isNotEmpty) {
+        setState(() {
+          _yukleniyor = false;
+          _sorgu.text = kapak.isbn!;
+          _bilgi = 'Fotoğraftaki barkod okundu: ${kapak.isbn}';
+        });
+        widget.onSecildi(k);
+        return;
+      }
+    }
+
+    if (kapak.sorgular.isEmpty) {
+      setState(() {
+        _yukleniyor = false;
+        _bilgi = 'Fotoğrafta okunabilir yazı bulunamadı. Kapağı düz ve aydınlık '
+            'bir yerde, yazılar net görünecek şekilde çekin.';
+      });
+      return;
+    }
+
+    setState(() => _bilgi = 'Kapaktan okunan: "${kapak.sorgular.first}" — web\'de aranıyor...');
+    final bulunan = <KatalogKitap>[];
+    final gorulen = <String>{};
+    for (final q in kapak.sorgular) {
+      final l = await KitapKatalog.ara(q);
+      for (final k in l) {
+        final anahtar = k.isbn.isNotEmpty ? k.isbn : k.title.toLowerCase();
+        if (gorulen.add(anahtar)) bulunan.add(k);
+      }
+      if (bulunan.length >= 6) break;
+    }
+    if (!mounted || no != _istek) return;
+    // Barkod okunup katalogda yoksa, bulunan ISBN'siz kitaba bu ISBN'i ver.
+    final sonuc = kapak.isbn == null
+        ? bulunan
+        : [
+            for (final k in bulunan)
+              k.isbn.isEmpty
+                  ? KatalogKitap(
+                      isbn: kapak.isbn!,
+                      title: k.title,
+                      author: k.author,
+                      publisher: k.publisher,
+                      subject: k.subject,
+                      totalPages: k.totalPages,
+                      topics: k.topics,
+                      kaynak: k.kaynak,
+                    )
+                  : k,
+          ];
+    setState(() {
+      _yukleniyor = false;
+      _arandi = true;
+      _sorgu.text = kapak.sorgular.first;
+      _sonuclar = sonuc.take(8).toList();
+      _bilgi = sonuc.isEmpty
+          ? 'Kapaktan okunan: "${kapak.sorgular.first}". Eşleşen kitap bulunamadı; '
+              'yazıyı düzeltip arayabilir ya da bilgileri aşağıya girebilirsiniz.'
+          : 'Kapaktan okunan: "${kapak.sorgular.first}". Doğru kitabı seçin:';
+    });
+    if (sonuc.isEmpty && kapak.isbn != null) {
+      widget.onSecildi(KatalogKitap(isbn: kapak.isbn!, title: ''));
+    }
   }
 
   Future<void> _mebAc() async {
@@ -94,6 +228,7 @@ class _KitapBulucuState extends State<KitapBulucu> {
     setState(() {
       _sonuclar = const [];
       _arandi = false;
+      _bilgi = null;
     });
     widget.onSecildi(k);
   }
@@ -135,10 +270,17 @@ class _KitapBulucuState extends State<KitapBulucu> {
             ),
             const SizedBox(width: 8),
             IconButton.filled(
-              tooltip: 'Barkod okut',
+              tooltip: 'Barkod / karekod okut',
               iconSize: 28,
               onPressed: _barkodOkut,
               icon: const Icon(Icons.qr_code_scanner),
+            ),
+            const SizedBox(width: 4),
+            IconButton.filledTonal(
+              tooltip: 'Kapağın fotoğrafını çek',
+              iconSize: 28,
+              onPressed: _fotografla,
+              icon: const Icon(Icons.photo_camera_outlined),
             ),
           ],
         ),
@@ -147,7 +289,13 @@ class _KitapBulucuState extends State<KitapBulucu> {
             padding: EdgeInsets.only(top: 8),
             child: LinearProgressIndicator(),
           ),
-        if (_arandi && _sonuclar.isEmpty)
+        if (_bilgi != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(_bilgi!,
+                style: TextStyle(fontSize: 12.5, color: renk.primary)),
+          ),
+        if (_arandi && _sonuclar.isEmpty && _bilgi == null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
@@ -189,7 +337,7 @@ class _KitapBulucuState extends State<KitapBulucu> {
           ),
         ),
         Text(
-          'Barkodu okutun ya da kitabın adını yazın; bulunan kitap seçilince '
+          'Barkodu / karekodu okutun, kapağın fotoğrafını çekin ya da kitabın adını yazın; bulunan kitap seçilince '
           'bilgileri tamsa hemen kaydedilir.',
           style: TextStyle(fontSize: 12, color: renk.onSurfaceVariant),
         ),
@@ -208,7 +356,13 @@ class BarkodTaraEkrani extends StatefulWidget {
 
 class _BarkodTaraEkraniState extends State<BarkodTaraEkrani> {
   final _kontrol = MobileScannerController(
-    formats: const [BarcodeFormat.ean13, BarcodeFormat.ean8, BarcodeFormat.upcA],
+    formats: const [
+      BarcodeFormat.ean13,
+      BarcodeFormat.ean8,
+      BarcodeFormat.upcA,
+      BarcodeFormat.qrCode,
+      BarcodeFormat.dataMatrix,
+    ],
     detectionSpeed: DetectionSpeed.noDuplicates,
   );
   bool _bitti = false;
@@ -225,10 +379,17 @@ class _BarkodTaraEkraniState extends State<BarkodTaraEkrani> {
     for (final b in yakalanan.barcodes) {
       final ham = b.rawValue;
       if (ham == null) continue;
-      final isbn = KitapKatalog.isbnTemizle(ham);
+      final isbn = KitapKatalog.isbnTemizle(ham) ?? KapakOkuyucu.metindenIsbn(ham);
       if (isbn != null) {
         _bitti = true;
         Navigator.of(context).pop(isbn);
+        return;
+      }
+      final kare = b.format == BarcodeFormat.qrCode || b.format == BarcodeFormat.dataMatrix;
+      if (kare && ham.trim().length >= 3) {
+        // Karekod: içeriğiyle aranacak
+        _bitti = true;
+        Navigator.of(context).pop('q:$ham');
         return;
       }
       setState(() => _uyari =
@@ -278,7 +439,7 @@ class _BarkodTaraEkraniState extends State<BarkodTaraEkrani> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Barkodu okutun'),
+        title: const Text('Barkod / karekod okutun'),
         actions: [
           IconButton(
             tooltip: 'Fener',
@@ -310,7 +471,7 @@ class _BarkodTaraEkraniState extends State<BarkodTaraEkrani> {
               children: [
                 Text(
                   _uyari ??
-                      'Kitabın arka kapağındaki barkodu çerçeveye getirin.',
+                      'Kitabın arka kapağındaki barkodu ya da karekodu çerçeveye getirin.',
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white, fontSize: 16),
                 ),
