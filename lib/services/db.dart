@@ -44,6 +44,7 @@ class Db {
     'ayarlar',
     'okulSinavlari',
     'yilSonuNotlari',
+    'programEtkinlikleri',
   ];
 
   // -------------------------------------------------------------------------
