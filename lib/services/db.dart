@@ -309,11 +309,15 @@ class Db {
     required String subject,
     required String description,
     DateTime? dueDate,
+    List<OdevKitabi> kitaplar = const [],
+    String sayfa = '',
   }) =>
       _sub(sid, 'homeworks').add({
         'title': title,
         'subject': subject,
         'description': description,
+        if (kitaplar.isNotEmpty) 'kitaplar': kitaplar.map((k) => k.toMap()).toList(),
+        if (sayfa.isNotEmpty) 'sayfa': sayfa,
         'dueDate': dueDate == null ? null : Timestamp.fromDate(dueDate),
         'done': false,
         'doneAt': null,

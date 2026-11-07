@@ -119,6 +119,8 @@ class Homework {
     required this.createdBy,
     required this.createdByName,
     required this.createdAt,
+    this.kitaplar = const [],
+    this.sayfa = '',
   });
 
   final String id;
@@ -126,6 +128,10 @@ class Homework {
   final String subject;
   final String description;
   final DateTime? dueDate;
+
+  /// Ödevin yapılacağı kitaplar ve sayfa / test aralığı.
+  final List<OdevKitabi> kitaplar;
+  final String sayfa;
   final bool done;
   final DateTime? doneAt;
   final String doneBy;
@@ -151,8 +157,24 @@ class Homework {
       createdBy: _str(m['createdBy']),
       createdByName: _str(m['createdByName']),
       createdAt: _ts(m['createdAt']),
+      kitaplar: m['kitaplar'] is List
+          ? (m['kitaplar'] as List).whereType<Map>().map(OdevKitabi.fromMap).toList()
+          : const [],
+      sayfa: _str(m['sayfa']),
     );
   }
+}
+
+/// Ödevde seçilen kitap (test kitabı ya da okuma kitabı).
+class OdevKitabi {
+  const OdevKitabi({required this.id, required this.tur, required this.ad});
+  final String id;
+  final String tur; // 'test' | 'okuma'
+  final String ad;
+
+  Map<String, dynamic> toMap() => {'id': id, 'tur': tur, 'ad': ad};
+  factory OdevKitabi.fromMap(Map m) => OdevKitabi(
+      id: _str(m['id']), tur: _str(m['tur']), ad: _str(m['ad']));
 }
 
 // ---------------------------------------------------------------------------

@@ -180,6 +180,22 @@ class HomeworkCard extends StatelessWidget {
                           label: Text(hw.subject),
                           visualDensity: VisualDensity.compact,
                         ),
+                      for (final k in hw.kitaplar)
+                        Chip(
+                          avatar: Icon(
+                              k.tur == 'okuma'
+                                  ? Icons.menu_book_outlined
+                                  : Icons.library_books_outlined,
+                              size: 16),
+                          label: Text(k.ad),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      if (hw.sayfa.isNotEmpty)
+                        Chip(
+                          avatar: const Icon(Icons.bookmark_outline, size: 16),
+                          label: Text(hw.sayfa),
+                          visualDensity: VisualDensity.compact,
+                        ),
                       if (hw.dueDate != null)
                         Chip(
                           avatar: Icon(Icons.event,
@@ -320,15 +336,156 @@ class AddHomeworkSheet extends StatefulWidget {
 class _AddHomeworkSheetState extends State<AddHomeworkSheet> {
   final _title = TextEditingController();
   final _desc = TextEditingController();
+  final _sayfa = TextEditingController();
   String? _subject;
   DateTime? _due = today().add(const Duration(days: 1));
   bool _busy = false;
+  bool _tumKitaplar = false;
+  final _secili = <String, OdevKitabi>{}; // anahtar: tur:id
+  late final LiveValue<List<TestBook>> _testKitaplari =
+      LiveValue(Db.testBooks(widget.student.id));
+  late final LiveValue<List<Book>> _okumaKitaplari =
+      LiveValue(Db.books(widget.student.id));
 
   @override
   void dispose() {
     _title.dispose();
     _desc.dispose();
+    _sayfa.dispose();
+    _testKitaplari.dispose();
+    _okumaKitaplari.dispose();
     super.dispose();
+  }
+
+  static String _katla(String s) => s
+      .toLowerCase()
+      .replaceAll('ı', 'i')
+      .replaceAll('İ', 'i')
+      .replaceAll('ğ', 'g')
+      .replaceAll('ü', 'u')
+      .replaceAll('ş', 's')
+      .replaceAll('ö', 'o')
+      .replaceAll('ç', 'c');
+
+  /// Dersle eşleşen kitap mı? (Ders alanı yoksa adına bakılır.)
+  bool _derseUygun(String kitapDersi, String ad) {
+    final d = _subject;
+    if (d == null || d.isEmpty) return true;
+    if (kitapDersi.isNotEmpty) {
+      if (kitapDersi == d) return true;
+      if (kitapDersi == 'Genel / Karma') return true;
+      return false;
+    }
+    final k = _katla(ad), dk = _katla(d).split(' ').first;
+    return k.contains(dk);
+  }
+
+  void _kitapSec(OdevKitabi k, bool secili) {
+    setState(() {
+      final anahtar = '${k.tur}:${k.id}';
+      if (secili) {
+        _secili[anahtar] = k;
+        if (_title.text.trim().isEmpty) _title.text = k.ad;
+      } else {
+        _secili.remove(anahtar);
+      }
+    });
+  }
+
+  Widget _kitaplarBolumu() {
+    return ListenableBuilder(
+      listenable: Listenable.merge([_testKitaplari, _okumaKitaplari]),
+      builder: (context, _) {
+        final testler = (_testKitaplari.value ?? const <TestBook>[])
+            .where((b) => b.durumu != 'istek')
+            .toList();
+        final okumalar = (_okumaKitaplari.value ?? const <Book>[])
+            .where((b) => b.durumu != 'istek')
+            .toList();
+        final adaylar = <(OdevKitabi, String, bool)>[
+          for (final b in testler)
+            (
+              OdevKitabi(id: b.id, tur: 'test', ad: b.title),
+              [b.publisher, if (b.subject.isNotEmpty) b.subject].where((x) => x.isNotEmpty).join(' • '),
+              _derseUygun(b.subject, b.title),
+            ),
+          for (final b in okumalar)
+            (
+              OdevKitabi(id: b.id, tur: 'okuma', ad: b.title),
+              [if (b.author.isNotEmpty) b.author, 'Okuma kitabı'].join(' • '),
+              _derseUygun('', b.title) ||
+                  _subject == 'Türkçe' ||
+                  _subject == 'Edebiyat',
+            ),
+        ];
+        final uygun = adaylar.where((a) => a.$3).toList();
+        final gosterilen = _tumKitaplar ? adaylar : uygun;
+        final yukleniyor = _testKitaplari.loading || _okumaKitaplari.loading;
+        return Card(
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.library_books_outlined, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _subject == null ? 'Kitaplar' : 'Kitaplar • $_subject',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    if (adaylar.length != uygun.length)
+                      TextButton(
+                        onPressed: () => setState(() => _tumKitaplar = !_tumKitaplar),
+                        child: Text(_tumKitaplar ? 'Bu ders' : 'Tümü (${adaylar.length})'),
+                      ),
+                  ],
+                ),
+                if (yukleniyor)
+                  const LinearProgressIndicator()
+                else if (gosterilen.isEmpty)
+                  Text(
+                    adaylar.isEmpty
+                        ? 'Henüz kayıtlı kitap yok. Kitaplar / Test Kitapları sekmesinden ekleyebilirsiniz.'
+                        : 'Bu derse kayıtlı kitap yok.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  )
+                else
+                  for (final a in gosterilen)
+                    CheckboxListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      value: _secili.containsKey('${a.$1.tur}:${a.$1.id}'),
+                      onChanged: (v) => _kitapSec(a.$1, v ?? false),
+                      title: Text(a.$1.ad),
+                      subtitle: a.$2.isEmpty ? null : Text(a.$2),
+                      secondary: Icon(a.$1.tur == 'okuma'
+                          ? Icons.menu_book_outlined
+                          : Icons.library_books_outlined),
+                    ),
+                if (_secili.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _sayfa,
+                    decoration: const InputDecoration(
+                      labelText: 'Sayfa / test',
+                      hintText: 'Ör. 45-47 ya da Test 3-5',
+                      prefixIcon: Icon(Icons.bookmark_outline),
+                      isDense: true,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _pickDate() async {
@@ -343,9 +500,13 @@ class _AddHomeworkSheetState extends State<AddHomeworkSheet> {
   }
 
   Future<void> _save() async {
-    final title = _title.text.trim();
+    var title = _title.text.trim();
+    final sayfa = _sayfa.text.trim();
+    if (title.isEmpty && _secili.isNotEmpty) {
+      title = _secili.values.map((k) => k.ad).join(', ');
+    }
     if (title.isEmpty) {
-      showInfo(context, 'Ödev başlığını yazın.');
+      showInfo(context, 'Ödev başlığını yazın ya da kitap seçin.');
       return;
     }
     setState(() => _busy = true);
@@ -359,6 +520,8 @@ class _AddHomeworkSheetState extends State<AddHomeworkSheet> {
         subject: _subject ?? '',
         description: _desc.text.trim(),
         dueDate: _due,
+        kitaplar: _secili.values.toList(),
+        sayfa: _secili.isEmpty ? '' : sayfa,
       ),
       success: 'Ödev eklendi.',
     );
@@ -376,14 +539,19 @@ class _AddHomeworkSheetState extends State<AddHomeworkSheet> {
       children: [
         TextField(
           controller: _title,
-          autofocus: true,
           textCapitalization: TextCapitalization.sentences,
           decoration: const InputDecoration(
               labelText: 'Ödev', hintText: 'Ör. Matematik sayfa 45-47'),
         ),
         const SizedBox(height: 12),
         SubjectDropdown(
-            value: _subject, onChanged: (v) => setState(() => _subject = v)),
+            value: _subject,
+            onChanged: (v) => setState(() {
+                  _subject = v;
+                  _tumKitaplar = false;
+                })),
+        const SizedBox(height: 12),
+        _kitaplarBolumu(),
         const SizedBox(height: 12),
         TextField(
           controller: _desc,
