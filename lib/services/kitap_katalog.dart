@@ -86,33 +86,43 @@ class KitapKatalog {
       debugPrint('Hazır kitap listesi okunamadı: $e');
       _yerel = {};
     }
-    // MEB ders kitapları (ISBN'siz; adla aranır)
-    for (final m in await mebKitaplari()) {
-      _yerel!['meb:${m.kitap.title}'] = m.kitap;
+    // Hazır listeler (MEB, yayınevleri): ISBN'si olan barkodla, diğerleri adla bulunur.
+    for (final m in await hazirKitaplar()) {
+      final k = m.kitap;
+      _yerel!.putIfAbsent(k.isbn.isNotEmpty ? k.isbn : 'liste:${k.title}', () => k);
     }
     return _yerel!;
   }
 
-  static List<MebKitabi>? _meb;
+  /// Hazır kitap listeleri: kaynak adı -> dosya.
+  static const hazirListeler = {
+    'MEB': 'assets/meb_kitaplari.json',
+    'Tonguç': 'assets/tonguc_kitaplari.json',
+  };
 
-  /// MEB ders kitapları (6-12. sınıf), assets/meb_kitaplari.json.
-  static Future<List<MebKitabi>> mebKitaplari() async {
-    if (_meb != null) return _meb!;
-    try {
-      final liste = jsonDecode(await rootBundle.loadString('assets/meb_kitaplari.json'));
-      _meb = [
-        for (final m in (liste as List).whereType<Map<String, dynamic>>())
-          MebKitabi(
+  static List<HazirKitap>? _hazir;
+
+  /// MEB ders kitapları ve yayınevi kitapları (6-12. sınıf).
+  static Future<List<HazirKitap>> hazirKitaplar() async {
+    if (_hazir != null) return _hazir!;
+    final l = <HazirKitap>[];
+    for (final e in hazirListeler.entries) {
+      try {
+        final liste = jsonDecode(await rootBundle.loadString(e.value));
+        for (final m in (liste as List).whereType<Map<String, dynamic>>()) {
+          l.add(HazirKitap(
+            kaynak: e.key,
             sinif: m['sinif'] is num ? (m['sinif'] as num).toInt() : 0,
             secmeli: m['secmeli'] == true,
+            tur: (m['tur'] ?? '').toString(),
             kitap: KatalogKitap.fromMap(m),
-          ),
-      ];
-    } catch (e) {
-      debugPrint('MEB kitap listesi okunamadı: $e');
-      _meb = [];
+          ));
+        }
+      } catch (err) {
+        debugPrint('${e.key} kitap listesi okunamadı: $err');
+      }
     }
-    return _meb!;
+    return _hazir = l;
   }
 
   // -------------------------------------------------------------------------
@@ -437,10 +447,18 @@ class KitapKatalog {
   }
 }
 
-/// MEB ders kitabı kaydı.
-class MebKitabi {
-  const MebKitabi({required this.sinif, required this.secmeli, required this.kitap});
+/// Hazır listedeki kitap (MEB ders kitabı ya da yayınevi kitabı).
+class HazirKitap {
+  const HazirKitap({
+    required this.kaynak,
+    required this.sinif,
+    required this.secmeli,
+    required this.tur,
+    required this.kitap,
+  });
+  final String kaynak; // 'MEB', 'Tonguç'
   final int sinif;
   final bool secmeli;
+  final String tur; // konu | soru | hazirlik | deneme | diger ('' = ders kitabı)
   final KatalogKitap kitap;
 }

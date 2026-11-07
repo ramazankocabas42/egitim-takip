@@ -185,7 +185,7 @@ class _KitapBulucuState extends State<KitapBulucu> {
           child: TextButton.icon(
             onPressed: _mebAc,
             icon: const Icon(Icons.account_balance_outlined),
-            label: const Text('MEB ders kitaplarından seç (6-12. sınıf)'),
+            label: const Text('Hazır listeden seç (MEB, Tonguç • 6-12. sınıf)'),
           ),
         ),
         Text(
@@ -352,31 +352,53 @@ Future<void> kayitsizKitapUyarisi(BuildContext context, String isbn,
   );
 }
 
-/// MEB ders kitapları listesi: sınıf seçilir, kitaba dokununca döner.
+/// Hazır kitap listeleri (MEB ders kitapları, Tonguç ...): kaynak ve sınıf
+/// seçilir, kitaba dokununca döner.
 class MebKitapSecici extends StatefulWidget {
   const MebKitapSecici({super.key});
 
   static int sonSinif = 8;
+  static String sonKaynak = 'MEB';
 
   @override
   State<MebKitapSecici> createState() => _MebKitapSeciciState();
 }
 
+const _turBasliklari = {
+  'konu': 'Konu anlatımlı',
+  'soru': 'Soru bankaları',
+  'hazirlik': 'Hazırlık kitapları',
+  'deneme': 'Denemeler',
+  'diger': 'Diğer',
+};
+
 class _MebKitapSeciciState extends State<MebKitapSecici> {
-  late final Future<List<MebKitabi>> _liste = KitapKatalog.mebKitaplari();
+  late final Future<List<HazirKitap>> _liste = KitapKatalog.hazirKitaplar();
   int _sinif = MebKitapSecici.sonSinif;
+  String _kaynak = MebKitapSecici.sonKaynak;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.8,
+      height: MediaQuery.of(context).size.height * 0.85,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
-            child: Text('MEB ders kitapları',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: SegmentedButton<String>(
+              segments: [
+                for (final k in KitapKatalog.hazirListeler.keys)
+                  ButtonSegment(
+                      value: k,
+                      label: Text(k == 'MEB' ? 'MEB ders kitapları' : '$k Yayınları')),
+              ],
+              selected: {_kaynak},
+              onSelectionChanged: (v) => setState(() {
+                _kaynak = v.first;
+                MebKitapSecici.sonKaynak = _kaynak;
+              }),
+            ),
           ),
           SizedBox(
             height: 46,
@@ -388,7 +410,7 @@ class _MebKitapSeciciState extends State<MebKitapSecici> {
                   Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: ChoiceChip(
-                      label: Text('$s. Sınıf'),
+                      label: Text(s == 12 && _kaynak != 'MEB' ? '12 / YKS' : '$s. Sınıf'),
                       selected: _sinif == s,
                       onSelected: (_) => setState(() {
                         _sinif = s;
@@ -400,43 +422,65 @@ class _MebKitapSeciciState extends State<MebKitapSecici> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<MebKitabi>>(
+            child: FutureBuilder<List<HazirKitap>>(
               future: _liste,
               builder: (context, snap) {
                 if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-                final l = snap.data!.where((m) => m.sinif == _sinif).toList();
-                final zorunlu = l.where((m) => !m.secmeli).toList();
-                final secmeli = l.where((m) => m.secmeli).toList();
-                Widget oge(MebKitabi m) => ListTile(
-                      dense: true,
-                      leading: const Icon(Icons.menu_book_outlined),
-                      title: Text(m.kitap.title),
-                      subtitle: Text('${m.kitap.subject} • ${m.kitap.publisher}'),
-                      trailing: const Icon(Icons.add_circle_outline),
-                      onTap: () => Navigator.pop(context, m.kitap),
+                final l = snap.data!
+                    .where((m) => m.kaynak == _kaynak && m.sinif == _sinif)
+                    .toList();
+                Widget oge(HazirKitap m) {
+                  final k = m.kitap;
+                  final alt = [
+                    k.subject,
+                    if (k.totalPages > 0) '${k.totalPages} sayfa',
+                    if (k.isbn.isNotEmpty) 'ISBN ${k.isbn}',
+                  ].join(' • ');
+                  return ListTile(
+                    dense: true,
+                    leading: Icon(m.tur == 'konu'
+                        ? Icons.auto_stories_outlined
+                        : (m.tur == 'soru' || m.tur == 'deneme'
+                            ? Icons.quiz_outlined
+                            : Icons.menu_book_outlined)),
+                    title: Text(k.title),
+                    subtitle: Text(alt),
+                    trailing: const Icon(Icons.add_circle_outline),
+                    onTap: () => Navigator.pop(context, k),
+                  );
+                }
+
+                Widget baslik(String t) => Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                      child: Text(t, style: const TextStyle(fontWeight: FontWeight.w700)),
                     );
+                final gruplar = <String, List<HazirKitap>>{};
+                if (_kaynak == 'MEB') {
+                  gruplar['Ortak dersler'] = l.where((m) => !m.secmeli).toList();
+                  gruplar['Seçmeli dersler'] = l.where((m) => m.secmeli).toList();
+                } else {
+                  for (final t in _turBasliklari.entries) {
+                    gruplar[t.value] = l.where((m) => m.tur == t.key).toList();
+                  }
+                }
                 return ListView(
                   padding: const EdgeInsets.only(bottom: 24),
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
-                      child: Text('Ortak dersler',
-                          style: TextStyle(fontWeight: FontWeight.w700)),
-                    ),
-                    ...zorunlu.map(oge),
-                    if (secmeli.isNotEmpty) ...[
+                    if (l.isEmpty)
                       const Padding(
-                        padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
-                        child: Text('Seçmeli dersler',
-                            style: TextStyle(fontWeight: FontWeight.w700)),
+                        padding: EdgeInsets.all(24),
+                        child: Text('Bu sınıf için listede kitap yok.'),
                       ),
-                      ...secmeli.map(oge),
-                    ],
+                    for (final g in gruplar.entries)
+                      if (g.value.isNotEmpty) ...[
+                        baslik('${g.key} (${g.value.length})'),
+                        ...g.value.map(oge),
+                      ],
                     const Padding(
                       padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
                       child: Text(
-                        'Sayfa sayısı kitaba göre değiştiği için seçtikten sonra yazmanız '
-                        'gerekir. Okulunuzda özel yayınevi kitabı okutuluyorsa barkodu okutun.',
+                        'Sayfa sayısı yazmayan kitaplarda seçtikten sonra sayfa sayısını '
+                        'girin. Elinizdeki kitabın barkodunu okutmak en doğru sonucu verir.',
                         style: TextStyle(fontSize: 12),
                       ),
                     ),

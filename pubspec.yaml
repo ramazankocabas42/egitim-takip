@@ -34,3 +34,4 @@ flutter:
   assets:
     - assets/kitaplar.json
     - assets/meb_kitaplari.json
+    - assets/tonguc_kitaplari.json
