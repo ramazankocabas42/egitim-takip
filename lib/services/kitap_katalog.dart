@@ -86,7 +86,33 @@ class KitapKatalog {
       debugPrint('Hazır kitap listesi okunamadı: $e');
       _yerel = {};
     }
+    // MEB ders kitapları (ISBN'siz; adla aranır)
+    for (final m in await mebKitaplari()) {
+      _yerel!['meb:${m.kitap.title}'] = m.kitap;
+    }
     return _yerel!;
+  }
+
+  static List<MebKitabi>? _meb;
+
+  /// MEB ders kitapları (6-12. sınıf), assets/meb_kitaplari.json.
+  static Future<List<MebKitabi>> mebKitaplari() async {
+    if (_meb != null) return _meb!;
+    try {
+      final liste = jsonDecode(await rootBundle.loadString('assets/meb_kitaplari.json'));
+      _meb = [
+        for (final m in (liste as List).whereType<Map<String, dynamic>>())
+          MebKitabi(
+            sinif: m['sinif'] is num ? (m['sinif'] as num).toInt() : 0,
+            secmeli: m['secmeli'] == true,
+            kitap: KatalogKitap.fromMap(m),
+          ),
+      ];
+    } catch (e) {
+      debugPrint('MEB kitap listesi okunamadı: $e');
+      _meb = [];
+    }
+    return _meb!;
   }
 
   // -------------------------------------------------------------------------
@@ -409,4 +435,12 @@ class KitapKatalog {
     }
     return h.toRadixString(16);
   }
+}
+
+/// MEB ders kitabı kaydı.
+class MebKitabi {
+  const MebKitabi({required this.sinif, required this.secmeli, required this.kitap});
+  final int sinif;
+  final bool secmeli;
+  final KatalogKitap kitap;
 }

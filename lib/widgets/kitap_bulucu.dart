@@ -77,6 +77,18 @@ class _KitapBulucuState extends State<KitapBulucu> {
     widget.onSecildi(k ?? KatalogKitap(isbn: isbn, title: ''));
   }
 
+  Future<void> _mebAc() async {
+    FocusScope.of(context).unfocus();
+    final k = await showModalBottomSheet<KatalogKitap>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      useSafeArea: true,
+      builder: (_) => const MebKitapSecici(),
+    );
+    if (k != null && mounted) _sec(k);
+  }
+
   void _sec(KatalogKitap k) {
     FocusScope.of(context).unfocus();
     setState(() {
@@ -168,7 +180,14 @@ class _KitapBulucuState extends State<KitapBulucu> {
                   .toList(),
             ),
           ),
-        const SizedBox(height: 4),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: _mebAc,
+            icon: const Icon(Icons.account_balance_outlined),
+            label: const Text('MEB ders kitaplarından seç (6-12. sınıf)'),
+          ),
+        ),
         Text(
           'Barkodu okutun ya da kitabın adını yazın; bulunan kitap seçilince '
           'bilgileri tamsa hemen kaydedilir.',
@@ -331,4 +350,103 @@ Future<void> kayitsizKitapUyarisi(BuildContext context, String isbn,
       ],
     ),
   );
+}
+
+/// MEB ders kitapları listesi: sınıf seçilir, kitaba dokununca döner.
+class MebKitapSecici extends StatefulWidget {
+  const MebKitapSecici({super.key});
+
+  static int sonSinif = 8;
+
+  @override
+  State<MebKitapSecici> createState() => _MebKitapSeciciState();
+}
+
+class _MebKitapSeciciState extends State<MebKitapSecici> {
+  late final Future<List<MebKitabi>> _liste = KitapKatalog.mebKitaplari();
+  int _sinif = MebKitapSecici.sonSinif;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.8,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
+            child: Text('MEB ders kitapları',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+          ),
+          SizedBox(
+            height: 46,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                for (var s = 6; s <= 12; s++)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: ChoiceChip(
+                      label: Text('$s. Sınıf'),
+                      selected: _sinif == s,
+                      onSelected: (_) => setState(() {
+                        _sinif = s;
+                        MebKitapSecici.sonSinif = s;
+                      }),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<MebKitabi>>(
+              future: _liste,
+              builder: (context, snap) {
+                if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+                final l = snap.data!.where((m) => m.sinif == _sinif).toList();
+                final zorunlu = l.where((m) => !m.secmeli).toList();
+                final secmeli = l.where((m) => m.secmeli).toList();
+                Widget oge(MebKitabi m) => ListTile(
+                      dense: true,
+                      leading: const Icon(Icons.menu_book_outlined),
+                      title: Text(m.kitap.title),
+                      subtitle: Text('${m.kitap.subject} • ${m.kitap.publisher}'),
+                      trailing: const Icon(Icons.add_circle_outline),
+                      onTap: () => Navigator.pop(context, m.kitap),
+                    );
+                return ListView(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
+                      child: Text('Ortak dersler',
+                          style: TextStyle(fontWeight: FontWeight.w700)),
+                    ),
+                    ...zorunlu.map(oge),
+                    if (secmeli.isNotEmpty) ...[
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
+                        child: Text('Seçmeli dersler',
+                            style: TextStyle(fontWeight: FontWeight.w700)),
+                      ),
+                      ...secmeli.map(oge),
+                    ],
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: Text(
+                        'Sayfa sayısı kitaba göre değiştiği için seçtikten sonra yazmanız '
+                        'gerekir. Okulunuzda özel yayınevi kitabı okutuluyorsa barkodu okutun.',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
