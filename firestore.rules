@@ -187,5 +187,87 @@ service cloud.firestore {
         );
       }
     }
+
+    // =====================================================================
+    // Keleş Satış (ayrı uygulama, aynı Firebase projesi)
+    // Bir firmanın verisini yalnızca o firmanın üyeleri görür.
+    // =====================================================================
+    function satisFirma(fid) {
+      return get(/databases/$(database)/documents/satis_firmalar/$(fid)).data;
+    }
+    function satisUye(fid) { return signedIn() && uid() in satisFirma(fid).uyeler; }
+    function satisYonetici(fid) { return signedIn() && uid() in satisFirma(fid).yoneticiler; }
+
+    match /satis_kullanicilar/{userId} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create, update: if signedIn() && uid() == userId
+        && (!('ad' in request.resource.data) || shortStr(request.resource.data.ad, 80))
+        && (!('firmaId' in request.resource.data) || shortStr(request.resource.data.firmaId, 64));
+      allow delete: if false;
+    }
+
+    // Davet kodu → firma. Kodu bilen okur; yalnız o firmanın yöneticisi yazar.
+    match /satis_kodlar/{kod} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && uid() in getAfter(/databases/$(database)/documents/satis_firmalar/$(request.resource.data.firmaId)).data.yoneticiler
+        && getAfter(/databases/$(database)/documents/satis_firmalar/$(request.resource.data.firmaId)).data.kod == kod;
+      allow delete: if signedIn() && satisYonetici(resource.data.firmaId);
+      allow update: if false;
+    }
+
+    match /satis_firmalar/{fid} {
+      allow get: if signedIn() && uid() in resource.data.uyeler;
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.sahip == uid()
+        && request.resource.data.uyeler == [uid()]
+        && request.resource.data.yoneticiler == [uid()]
+        && request.resource.data.sayac == 0
+        && shortStr(request.resource.data.ad, 40);
+      allow update: if signedIn() && (
+        // Yönetici: ayarlar, ekip, kod. Sahip değişmez, sahip çıkarılamaz.
+        (uid() in resource.data.yoneticiler
+          && request.resource.data.sahip == resource.data.sahip
+          && resource.data.sahip in request.resource.data.uyeler
+          && resource.data.sahip in request.resource.data.yoneticiler
+          && request.resource.data.yoneticiler.hasOnly(request.resource.data.uyeler)
+          && request.resource.data.sayac >= resource.data.sayac
+          && shortStr(request.resource.data.ad, 40))
+        // Üye: yalnızca sipariş sayacını bir artırır.
+        || (uid() in resource.data.uyeler
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sayac'])
+          && request.resource.data.sayac == resource.data.sayac + 1)
+        // Katılım: doğru davet koduyla yalnızca kendini ekler.
+        || (!(uid() in resource.data.uyeler)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uyeler', 'katilKod'])
+          && request.resource.data.katilKod == resource.data.kod
+          && request.resource.data.uyeler.toSet() == resource.data.uyeler.toSet().union([uid()].toSet()))
+      );
+      allow delete: if signedIn() && uid() == resource.data.sahip;
+
+      match /siparisler/{sid} {
+        function gecerli(d) {
+          return shortStr(d.musteri, 80) && d.musteri.size() > 0
+            && shortStr(d.urun, 60) && d.urun.size() > 0
+            && d.miktar is number && d.miktar > 0
+            && shortStr(d.birim, 16)
+            && (!('not' in d) || shortStr(d.not, 500))
+            && (d.fiyat == null || (d.fiyat is number && d.fiyat >= 0))
+            && d.tahsilatlar is list && d.tahsilatlar.size() <= 200;
+        }
+        allow read: if satisUye(fid);
+        allow create: if satisUye(fid)
+          && request.resource.data.olusturan == uid()
+          && gecerli(request.resource.data);
+        allow update: if satisUye(fid)
+          && request.resource.data.olusturan == resource.data.olusturan
+          && request.resource.data.no == resource.data.no
+          && gecerli(request.resource.data);
+        allow delete: if satisYonetici(fid) || (satisUye(fid) && resource.data.olusturan == uid());
+      }
+    }
   }
 }
