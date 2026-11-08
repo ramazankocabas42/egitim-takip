@@ -34,9 +34,11 @@ service cloud.firestore {
       allow create: if signedIn() && uid() == userId
         && request.resource.data.role in ['parent', 'student', 'teacher']
         && shortStr(request.resource.data.name, 80);
-      // Rol sonradan değiştirilemez (yetki yükseltmeyi önler).
+      // Kullanıcı hesap türünü (veli / öğrenci / öğretmen) değiştirebilir.
+      // Yetkiler role değil, öğrencideki parentIds / teacherIds / studentUid
+      // üyeliğine bağlı olduğu için bu bir yetki yükseltmesi sağlamaz.
       allow update: if signedIn() && uid() == userId
-        && request.resource.data.role == resource.data.role
+        && request.resource.data.role in ['parent', 'student', 'teacher']
         && shortStr(request.resource.data.name, 80);
       allow delete: if false;
     }

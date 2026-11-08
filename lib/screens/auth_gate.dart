@@ -57,7 +57,7 @@ class _ProfileGateState extends State<_ProfileGate> {
         }
         final me = snap.data;
         if (me == null) return ProfileSetupScreen(user: widget.user);
-        return HomeScreen(me: me);
+        return HomeScreen(key: ValueKey('${me.uid}|${me.role.name}'), me: me);
       },
     );
   }

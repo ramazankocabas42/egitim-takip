@@ -460,15 +460,15 @@ class LogoutButton extends StatelessWidget {
     return IconButton(
       tooltip: 'Çıkış yap',
       icon: const Icon(Icons.logout),
-      onPressed: () async {
-        final ok = await confirm(context,
-            title: 'Çıkış yap',
-            message: 'Hesabınızdan çıkmak istiyor musunuz?',
-            ok: 'Çıkış yap');
-        if (!ok || !context.mounted) return;
-        Navigator.of(context).popUntil((r) => r.isFirst);
-        await FirebaseAuth.instance.signOut();
-      },
+      onPressed: () => cikisYap(context),
     );
   }
+}
+
+Future<void> cikisYap(BuildContext context) async {
+  final ok = await confirm(context,
+      title: 'Çıkış yap', message: 'Hesabınızdan çıkmak istiyor musunuz?', ok: 'Çıkış yap');
+  if (!ok || !context.mounted) return;
+  Navigator.of(context).popUntil((r) => r.isFirst);
+  await FirebaseAuth.instance.signOut();
 }

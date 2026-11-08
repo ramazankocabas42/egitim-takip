@@ -70,6 +70,10 @@ class Db {
         'createdAt': _now(),
       });
 
+  /// Hesap türünü (rolü) ve adı değiştirir.
+  static Future<void> updateRole(String uid, UserRole role) =>
+      _users.doc(uid).update({'role': role.name, 'updatedAt': _now()});
+
   static Future<List<AppUser>> getUsers(Iterable<String> uids) async {
     final out = <AppUser>[];
     for (final id in uids.toSet()) {

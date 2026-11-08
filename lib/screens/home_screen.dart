@@ -6,6 +6,7 @@ import '../services/guncelleme.dart';
 import '../services/notifications.dart';
 import '../services/sms_aktarici.dart';
 import '../widgets/common.dart';
+import '../widgets/hesap_turu.dart';
 import 'ogrenci_profil.dart';
 import 'student_screen.dart';
 
@@ -225,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   icon: const Icon(Icons.vpn_key_outlined),
                   onPressed: _join,
                 ),
-              const LogoutButton(),
+              HesapMenusu(me: me),
             ],
           ),
           body: body,

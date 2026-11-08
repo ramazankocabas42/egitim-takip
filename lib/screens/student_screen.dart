@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../models.dart';
 import '../services/db.dart';
 import '../widgets/common.dart';
+import '../widgets/hesap_turu.dart';
 import 'modules/books_tab.dart';
 import 'ogrenci_profil.dart';
 import 'modules/homework_tab.dart';
@@ -48,7 +49,7 @@ class _StudentScreenState extends State<StudentScreen> {
       builder: (context, snap) {
         if (snap.hasError) {
           return Scaffold(
-            appBar: AppBar(actions: [if (widget.isRoot) const LogoutButton()]),
+            appBar: AppBar(actions: [if (widget.isRoot) HesapMenusu(me: widget.me)]),
             body: const EmptyState(
                 icon: Icons.lock_outline,
                 text: 'Bu öğrenciye erişiminiz yok ya da bağlantınız kaldırıldı.'),
@@ -60,7 +61,7 @@ class _StudentScreenState extends State<StudentScreen> {
         final s = snap.data;
         if (s == null) {
           return Scaffold(
-            appBar: AppBar(actions: [if (widget.isRoot) const LogoutButton()]),
+            appBar: AppBar(actions: [if (widget.isRoot) HesapMenusu(me: widget.me)]),
             body: const EmptyState(
                 icon: Icons.person_off_outlined, text: 'Öğrenci bulunamadı.'),
           );
@@ -134,7 +135,7 @@ class _StudentScreenState extends State<StudentScreen> {
                   onPressed: () =>
                       openSheet<void>(context, StudentInfoSheet(student: s, me: me)),
                 ),
-                if (widget.isRoot) const LogoutButton(),
+                if (widget.isRoot) HesapMenusu(me: widget.me),
               ],
               bottom: TabBar(
                 isScrollable: true,
