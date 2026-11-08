@@ -57,6 +57,7 @@ class _OsymEkraniState extends State<OsymEkrani> {
   final _metinler = <String, String>{};
   int _ilerleme = 0;
   bool _esitleniyor = false;
+  bool _otomatikDenendi = false;
   String? _durum;
   Timer? _gecikme;
   Completer<void>? _yuklendi;
@@ -77,7 +78,7 @@ class _OsymEkraniState extends State<OsymEkrani> {
           if (_esitleniyor) return;
           if (url.contains('osym.gov.tr')) OsymEkrani.sonSayfa = url;
           _gecikme?.cancel();
-          _gecikme = Timer(const Duration(milliseconds: 1200), () => _oku('Açık sayfa'));
+          _gecikme = Timer(const Duration(milliseconds: 1200), _sayfaAcildi);
         },
       ))
       ..loadRequest(Uri.parse(OsymEkrani.sonSayfa ?? _baslangic));
@@ -99,6 +100,28 @@ class _OsymEkraniState extends State<OsymEkrani> {
       }
     }
     return r;
+  }
+
+  /// Giriş yapılmış bir ÖSYM sayfası açıldıysa aktarımı kendiliğinden başlat.
+  Future<void> _sayfaAcildi() async {
+    if (!mounted || _esitleniyor) return;
+    await _oku('Açık sayfa');
+    if (_otomatikDenendi || !mounted) return;
+    try {
+      final r = await _js(
+          'JSON.stringify({p: !!document.querySelector("input[type=password]"), h: location.host})');
+      if (r is! Map) return;
+      final host = (r['h'] ?? '').toString();
+      final sifreVar = r['p'] == true;
+      if (!host.contains('osym.gov.tr') || sifreVar) return; // giriş sayfası / e-Devlet
+      final sonucLinki = (await _linkler()).any((l) {
+        final k = KitapKatalog.kelimelereAyir(l.$1).join(' ');
+        return k.contains('sonuc') || k.contains('cevap kagidi');
+      });
+      if (!sonucLinki && _toplanan.isEmpty) return;
+      _otomatikDenendi = true;
+      await _esitle();
+    } catch (_) {}
   }
 
   Future<void> _oku(String ad) async {
@@ -309,7 +332,7 @@ class _OsymEkraniState extends State<OsymEkrani> {
                   Expanded(
                     child: Text(
                       sinavSayisi == 0
-                          ? 'Giriş yapın; sonuç / cevap kâğıdı sayfasını açıp Eşitle\'ye basın.'
+                          ? 'Giriş yapın; sonuçlar kendiliğinden aktarılır.'
                           : 'Bulunan: ${_toplanan.values.map((t) => t.ad).join(', ')}',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

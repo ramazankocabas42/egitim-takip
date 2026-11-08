@@ -46,7 +46,31 @@ class _OsymTabState extends State<OsymTab> {
     final bulunan = await Navigator.of(context)
         .push<List<OsymTaslak>>(MaterialPageRoute(builder: (_) => const OsymEkrani()));
     if (bulunan == null || bulunan.isEmpty || !mounted) return;
-    await openSheet<void>(context, _AktarimSheet(sid: sid, me: widget.me, taslaklar: bulunan, mevcut: mevcut));
+    // Önizleme beklemeden kaydet; aynı yılın aynı sınavı varsa güncelle.
+    await runSafe(context, () async {
+      for (final t in bulunan) {
+        OsymSonuc? e;
+        for (final m in mevcut) {
+          if (m.tur == t.tur && m.resmi && m.tarih.year == t.yil) e = m;
+        }
+        await OsymDb.kaydet(
+          sid,
+          widget.me,
+          id: e?.id,
+          tur: t.tur,
+          ad: e?.ad ?? t.ad,
+          tarih: e?.tarih ?? DateTime(t.yil ?? DateTime.now().year, 7, 1),
+          resmi: true,
+          kaynak: 'osym',
+          testler: {...?e?.testler, ...t.testler},
+          puanlar: {...?e?.puanlar, ...t.puanlar},
+          konuHata: e?.konuHata,
+        );
+      }
+    },
+        success: bulunan.length == 1
+            ? '${bulunan.first.ad} aktarıldı.'
+            : '${bulunan.length} sınav aktarıldı: ${bulunan.map((t) => t.ad).join(', ')}');
   }
 
   void _ac(OsymSonuc s) {
@@ -324,97 +348,6 @@ Widget _rozet(String m, Color r) => Container(
           color: r.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
       child: Text(m, style: TextStyle(color: r, fontWeight: FontWeight.w800, fontSize: 12.5)),
     );
-
-// ---------------------------------------------------------------------------
-// ÖSYM'den aktarılanların önizlemesi
-// ---------------------------------------------------------------------------
-class _AktarimSheet extends StatefulWidget {
-  const _AktarimSheet(
-      {required this.sid, required this.me, required this.taslaklar, required this.mevcut});
-  final String sid;
-  final AppUser me;
-  final List<OsymTaslak> taslaklar;
-  final List<OsymSonuc> mevcut;
-
-  @override
-  State<_AktarimSheet> createState() => _AktarimSheetState();
-}
-
-class _AktarimSheetState extends State<_AktarimSheet> {
-  late final _secili = List<bool>.filled(widget.taslaklar.length, true);
-  bool _mesgul = false;
-
-  OsymSonuc? _eslesen(OsymTaslak t) {
-    for (final m in widget.mevcut) {
-      if (m.tur == t.tur && m.resmi && m.tarih.year == t.yil) return m;
-    }
-    return null;
-  }
-
-  Future<void> _kaydet() async {
-    setState(() => _mesgul = true);
-    final nav = Navigator.of(context);
-    final ok = await runSafe(context, () async {
-      for (var i = 0; i < widget.taslaklar.length; i++) {
-        if (!_secili[i]) continue;
-        final t = widget.taslaklar[i];
-        final e = _eslesen(t);
-        await OsymDb.kaydet(
-          widget.sid,
-          widget.me,
-          id: e?.id,
-          tur: t.tur,
-          ad: e?.ad ?? t.ad,
-          tarih: e?.tarih ?? DateTime(t.yil ?? DateTime.now().year, 7, 1),
-          resmi: true,
-          kaynak: 'osym',
-          testler: {...?e?.testler, ...t.testler},
-          puanlar: {...?e?.puanlar, ...t.puanlar},
-          konuHata: e?.konuHata,
-        );
-      }
-    }, success: 'Sonuçlar kaydedildi.');
-    if (ok) {
-      nav.pop();
-    } else if (mounted) {
-      setState(() => _mesgul = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SheetFrame(
-      title: 'ÖSYM\'den bulunanlar',
-      children: [
-        for (var i = 0; i < widget.taslaklar.length; i++)
-          Builder(builder: (_) {
-            final t = widget.taslaklar[i];
-            final e = _eslesen(t);
-            return CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              value: _secili[i],
-              onChanged: (v) => setState(() => _secili[i] = v ?? false),
-              title: Text(t.ad, style: const TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: Text([
-                for (final x in t.testler.entries)
-                  '${t.tanim.test(x.key)?.ad ?? x.key}: ${x.value.d}D ${x.value.y}Y ${x.value.b}B',
-                for (final p in t.puanlar.entries) '${p.key} puanı: ${_p(p.value)}',
-                if (e != null) '↻ Mevcut kayıt güncellenecek',
-              ].join('\n')),
-              isThreeLine: true,
-            );
-          }),
-        const SizedBox(height: 12),
-        FilledButton(
-          style: FilledButton.styleFrom(
-              backgroundColor: _mavi, minimumSize: const Size.fromHeight(48)),
-          onPressed: _mesgul || !_secili.contains(true) ? null : _kaydet,
-          child: const Text('Kaydet'),
-        ),
-      ],
-    );
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Elle giriş / düzenleme
