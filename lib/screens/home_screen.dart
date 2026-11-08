@@ -183,7 +183,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ],
           );
         } else if (list.isEmpty) {
-          body = EmptyState(icon: Icons.groups_outlined, text: _emptyText);
+          body = ListView(
+            padding: const EdgeInsets.fromLTRB(16, 40, 16, 96),
+            children: [
+              Icon(Icons.groups_outlined,
+                  size: 64, color: Theme.of(context).colorScheme.outline),
+              const SizedBox(height: 12),
+              Text(_emptyText, textAlign: TextAlign.center),
+              const SizedBox(height: 24),
+              _KendimKarti(me: me),
+            ],
+          );
         } else {
           body = ListView(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 96),
@@ -197,6 +207,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     student: s,
                     onTap: () => _openStudent(s),
                   )),
+              if (me.role != UserRole.student && !list.any((s) => s.studentUid == me.uid)) ...[
+                const SizedBox(height: 12),
+                _KendimKarti(me: me),
+              ],
             ],
           );
         }
@@ -420,6 +434,51 @@ class _JoinDialogState extends State<_JoinDialog> {
         FilledButton(
             onPressed: _busy ? null : _join, child: const Text('Katıl')),
       ],
+    );
+  }
+}
+
+/// Veli / öğretmen hesabıyla kendini de (bireysel öğrenci olarak) takip etme.
+class _KendimKarti extends StatelessWidget {
+  const _KendimKarti({required this.me});
+  final AppUser me;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Card(
+      color: cs.secondaryContainer,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => OgrenciProfilOlusturEkrani(me: me))),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: cs.secondary,
+                child: Icon(Icons.self_improvement, color: cs.onSecondary),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Kendimi de takip etmek istiyorum',
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5)),
+                    SizedBox(height: 2),
+                    Text('KPSS, AGS, YKS ya da başka bir sınava hazırlanıyorsanız kendi '
+                        'çalışmanızı, denemelerinizi ve ÖSYM sonuçlarınızı takip edin.',
+                        style: TextStyle(fontSize: 13)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

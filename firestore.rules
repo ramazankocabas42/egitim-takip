@@ -128,7 +128,7 @@ service cloud.firestore {
         && request.resource.data.teacherIds.size() == 0
         && (
           (myRole() == 'parent' && request.resource.data.studentUid == null)
-          || (myRole() == 'student' && request.resource.data.studentUid == uid())
+          || request.resource.data.studentUid == uid()
         )
         && validStudent(request.resource.data);
 

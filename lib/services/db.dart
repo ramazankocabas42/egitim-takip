@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -87,11 +88,38 @@ class Db {
       UserRole.teacher => _students.where('teacherIds', arrayContains: me.uid),
       UserRole.student => _students.where('studentUid', isEqualTo: me.uid),
     };
-    return q.snapshots().map((s) {
-      final list = s.docs.map(Student.fromDoc).toList();
-      list.sort((a, b) => a.name.compareTo(b.name));
-      return list;
-    });
+    List<Student> liste(QuerySnapshot<Map<String, dynamic>> s) =>
+        s.docs.map(Student.fromDoc).toList();
+    if (me.role != UserRole.teacher) {
+      return q.snapshots().map((s) => liste(s)..sort((a, b) => a.name.compareTo(b.name)));
+    }
+    // Öğretmen: öğrencileri + kendi (bireysel) profili
+    final kendi = _students.where('studentUid', isEqualTo: me.uid);
+    late StreamController<List<Student>> c;
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? a, b;
+    var la = <Student>[], lb = <Student>[];
+    void yay() {
+      final m = <String, Student>{for (final s in [...lb, ...la]) s.id: s};
+      c.add(m.values.toList()..sort((x, y) => x.name.compareTo(y.name)));
+    }
+
+    c = StreamController<List<Student>>(
+      onListen: () {
+        a = q.snapshots().listen((s) {
+          la = liste(s);
+          yay();
+        }, onError: c.addError);
+        b = kendi.snapshots().listen((s) {
+          lb = liste(s);
+          yay();
+        }, onError: c.addError);
+      },
+      onCancel: () async {
+        await a?.cancel();
+        await b?.cancel();
+      },
+    );
+    return c.stream;
   }
 
   static Stream<Student?> studentStream(String sid) => _students
