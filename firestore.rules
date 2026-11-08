@@ -191,7 +191,7 @@ service cloud.firestore {
     // =====================================================================
     // Keleş Satış (ayrı uygulama, aynı Firebase projesi)
     // Firma verisini yalnızca üyeler görür. Saha çalışanları yalnızca
-    // kendi girdikleri siparişleri görür ve değiştirir. Davet kodları
+    // kendi girdikleri ve aracı oldukları siparişleri görür ve değiştirir. Davet kodları
     // yalnızca yöneticilerin okuyabildiği gizli/kodlar belgesindedir.
     // =====================================================================
     function satisFirmaYolu(fid) {
@@ -296,13 +296,19 @@ service cloud.firestore {
             && (d.fiyat == null || (d.fiyat is number && d.fiyat >= 0))
             && d.tahsilatlar is list && d.tahsilatlar.size() <= 200;
         }
+        // Saha çalışanı: kendi girdiği ya da aracı olarak bağlandığı
+        // (gorenler) satışlar. Bağlamayı yalnızca ekip üyeleri değiştirir.
         allow read: if satisUye(fid)
-          || (satisSaha(fid) && resource.data.olusturan == uid());
-        allow create: if (satisUye(fid) || satisSaha(fid))
+          || (satisSaha(fid)
+              && (resource.data.olusturan == uid() || uid() in resource.data.gorenler));
+        allow create: if (satisUye(fid)
+            || (satisSaha(fid) && request.resource.data.get('gorenler', []) == []))
           && request.resource.data.olusturan == uid()
           && gecerli(request.resource.data);
         allow update: if (satisUye(fid)
-            || (satisSaha(fid) && resource.data.olusturan == uid()))
+            || (satisSaha(fid)
+                && (resource.data.olusturan == uid() || uid() in resource.data.gorenler)
+                && request.resource.data.get('gorenler', []) == resource.data.get('gorenler', [])))
           && request.resource.data.olusturan == resource.data.olusturan
           && request.resource.data.no == resource.data.no
           && gecerli(request.resource.data);
