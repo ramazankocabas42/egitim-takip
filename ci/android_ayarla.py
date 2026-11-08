@@ -186,3 +186,16 @@ yaz(os.path.join(APP, "proguard-rules.pro"), """-dontwarn com.google.mlkit.visio
 -keep class com.google.mlkit.** { *; }
 """)
 
+
+# --- Gradle dağıtımı: GitHub aynası zaman zaman 504 veriyor; resmî sunucuyu kullan
+sarmalayici = os.path.join(os.path.dirname(APP), "gradle", "wrapper", "gradle-wrapper.properties")
+if os.path.exists(sarmalayici):
+    w = oku(sarmalayici)
+    yeni = re.sub(
+        r"distributionUrl=.*gradle-distributions/releases/download/v([\d.]+)/gradle-([\d.]+)-(all|bin)\.zip",
+        lambda m: "distributionUrl=https\\://services.gradle.org/distributions/gradle-%s-bin.zip" % m.group(2),
+        w,
+    )
+    if yeni != w:
+        yaz(sarmalayici, yeni)
+        print("Gradle adresi services.gradle.org olarak değiştirildi")
