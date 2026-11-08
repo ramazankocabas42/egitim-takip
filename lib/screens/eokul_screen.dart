@@ -13,7 +13,7 @@ const _baslangic = 'https://e-okul.meb.gov.tr/';
 
 /// Sayfadaki (ve aynı kökenli çerçevelerdeki) tablo satırlarını ve
 /// tablo dışı yazı satırlarını JSON olarak döndürür.
-const _okumaJs = r'''
+const sayfaOkumaJs = r'''
 (function(){
   var out=[];
   function temiz(s){return (s||'').replace(/\s+/g,' ').trim();}
@@ -149,7 +149,7 @@ class _EOkulEkraniState extends State<EOkulEkrani> {
   }
 
   Future<List<List<String>>> _satirlar() async {
-    final r = await _jsSonuc(_okumaJs);
+    final r = await _jsSonuc(sayfaOkumaJs);
     if (r is! List) return const [];
     return [
       for (final x in r)

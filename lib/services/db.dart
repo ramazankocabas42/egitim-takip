@@ -45,6 +45,7 @@ class Db {
     'okulSinavlari',
     'yilSonuNotlari',
     'programEtkinlikleri',
+    'osymSinavlari',
   ];
 
   // -------------------------------------------------------------------------
@@ -129,6 +130,36 @@ class Db {
       'teacherIds': <String>[],
       'studentUid': null,
       'inviteCode': code,
+      'createdBy': me.uid,
+      'createdAt': _now(),
+    });
+    await _invites.doc(code).set({
+      'studentId': ref.id,
+      'kind': 'member',
+      'createdBy': me.uid,
+      'createdAt': _now(),
+    });
+    await _newParentCode(me, ref.id);
+  }
+
+  /// Öğrencinin kendi başına açtığı profil (YKS / KPSS / AGS hazırlığı).
+  /// Öğrenci hem profilin sahibi hem de öğrencisidir; isterse davet koduyla
+  /// koçunu, öğretmenini ya da velisini ekleyebilir.
+  static Future<void> createOwnProfile(
+    AppUser me, {
+    required String name,
+    required String grade,
+  }) async {
+    final code = await _freeCode();
+    final ref = _students.doc();
+    await ref.set({
+      'name': name,
+      'grade': grade,
+      'parentIds': [me.uid],
+      'teacherIds': <String>[],
+      'studentUid': me.uid,
+      'inviteCode': code,
+      'bireysel': true,
       'createdBy': me.uid,
       'createdAt': _now(),
     });

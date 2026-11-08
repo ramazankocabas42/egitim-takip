@@ -126,6 +126,61 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         } else if (snap.hasError) {
           body = EmptyState(
               icon: Icons.error_outline, text: errorText(snap.error!));
+        } else if (list.isEmpty && me.role == UserRole.student) {
+          body = ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              const SizedBox(height: 24),
+              Icon(Icons.school_outlined, size: 72, color: Theme.of(context).colorScheme.primary),
+              const SizedBox(height: 16),
+              Text('Hoş geldin ${me.name}!',
+                  textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 24),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text('Kendi başıma kullanacağım',
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                      const SizedBox(height: 4),
+                      const Text('YKS, KPSS, AGS ya da LGS hazırlığını kendin takip et. '
+                          'ÖSYM sonuçlarını aktar, konu eksiklerini gör. İstersen sonra '
+                          'koçunu ya da velini davet kodunla eklersin.'),
+                      const SizedBox(height: 12),
+                      FilledButton.icon(
+                        onPressed: () => showDialog<void>(
+                            context: context, builder: (_) => _OwnProfileDialog(me: me)),
+                        icon: const Icon(Icons.person_add_alt_1),
+                        label: const Text('Kendi profilimi oluştur'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text('Velim / öğretmenim beni ekledi',
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                      const SizedBox(height: 4),
+                      const Text('Velinden ya da öğretmeninden aldığın 6 haneli davet koduyla katıl.'),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: _join,
+                        icon: const Icon(Icons.vpn_key_outlined),
+                        label: const Text('Kodla katıl'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
         } else if (list.isEmpty) {
           body = EmptyState(icon: Icons.groups_outlined, text: _emptyText);
         } else {
@@ -363,6 +418,80 @@ class _JoinDialogState extends State<_JoinDialog> {
             child: const Text('Vazgeç')),
         FilledButton(
             onPressed: _busy ? null : _join, child: const Text('Katıl')),
+      ],
+    );
+  }
+}
+
+/// Öğrencinin kendi profilini açması (bireysel kullanım).
+class _OwnProfileDialog extends StatefulWidget {
+  const _OwnProfileDialog({required this.me});
+  final AppUser me;
+
+  @override
+  State<_OwnProfileDialog> createState() => _OwnProfileDialogState();
+}
+
+class _OwnProfileDialogState extends State<_OwnProfileDialog> {
+  late final _name = TextEditingController(text: widget.me.name);
+  String _grade = '12. Sınıf';
+  bool _busy = false;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _name.text.trim();
+    if (name.isEmpty) return;
+    setState(() => _busy = true);
+    final ok = await runSafe(
+      context,
+      () => Db.createOwnProfile(widget.me, name: name, grade: _grade),
+      success: 'Profilin hazır.',
+    );
+    if (!mounted) return;
+    if (ok) {
+      Navigator.pop(context);
+    } else {
+      setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Kendi profilimi oluştur'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _name,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(labelText: 'Adın Soyadın'),
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            value: _grade,
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: 'Durumun'),
+            items: grades.map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
+            onChanged: (v) => setState(() => _grade = v ?? _grade),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '9. sınıf ve üstünde "ÖSYM Sınavları" (YKS, KPSS, AGS) bölümü açılır; '
+            '8. sınıf ve altında LGS bölümü görünür.',
+            style: TextStyle(fontSize: 12),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+            onPressed: _busy ? null : () => Navigator.pop(context), child: const Text('Vazgeç')),
+        FilledButton(onPressed: _busy ? null : _save, child: const Text('Oluştur')),
       ],
     );
   }

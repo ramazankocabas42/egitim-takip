@@ -45,7 +45,18 @@ const grades = <String>[
   '11. Sınıf',
   '12. Sınıf',
   'Mezun',
+  'Üniversite Öğrencisi',
+  'Üniversite Mezunu',
 ];
+
+/// 8. sınıf ve altı mı (LGS dönemi)?
+bool ortaokulVeAlti(String g) {
+  final i = grades.indexOf(g);
+  return i >= 0 && i <= grades.indexOf('8. Sınıf');
+}
+
+/// Okula gitmeyen (mezun / üniversite) mi?
+bool okulDisi(String g) => g == 'Mezun' || g.startsWith('Üniversite');
 
 IconData roleIcon(UserRole r) => switch (r) {
       UserRole.parent => Icons.family_restroom,

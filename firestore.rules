@@ -122,11 +122,14 @@ service cloud.firestore {
         resource.data.studentUid == uid()
       );
 
+      // Veli çocuğunu ekler ya da öğrenci kendi profilini (bireysel) açar.
       allow create: if signedIn()
-        && myRole() == 'parent'
         && request.resource.data.parentIds == [uid()]
         && request.resource.data.teacherIds.size() == 0
-        && request.resource.data.studentUid == null
+        && (
+          (myRole() == 'parent' && request.resource.data.studentUid == null)
+          || (myRole() == 'student' && request.resource.data.studentUid == uid())
+        )
         && validStudent(request.resource.data);
 
       allow update: if signedIn() && validStudent(request.resource.data) && (

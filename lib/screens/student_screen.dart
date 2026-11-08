@@ -9,6 +9,7 @@ import 'modules/homework_tab.dart';
 import 'modules/lgs_tab.dart';
 import 'modules/okul_tab.dart';
 import 'modules/oneriler_tab.dart';
+import 'modules/osym_tab.dart';
 import 'modules/overview_tab.dart';
 import 'modules/plan_tab.dart';
 import 'modules/program_tab.dart';
@@ -63,8 +64,28 @@ class _StudentScreenState extends State<StudentScreen> {
                 icon: Icons.person_off_outlined, text: 'Öğrenci bulunamadı.'),
           );
         }
+        final lgs = !okulDisi(s.grade) && (ortaokulVeAlti(s.grade) || s.grade.isEmpty);
+        final osym = !ortaokulVeAlti(s.grade);
+        final sekmeler = <(Tab, Widget)>[
+          (const Tab(icon: Icon(Icons.dashboard_outlined), text: 'Özet'), OverviewTab(student: s, me: me)),
+          (const Tab(icon: Icon(Icons.tips_and_updates_outlined), text: 'Önerilerim'), OnerilerTab(student: s, me: me)),
+          if (osym)
+            (const Tab(icon: Icon(Icons.workspace_premium_outlined), text: 'ÖSYM Sınavları'), OsymTab(student: s, me: me)),
+          (const Tab(icon: Icon(Icons.assignment_outlined), text: 'Ödevler'), HomeworkTab(student: s, me: me)),
+          (const Tab(icon: Icon(Icons.calendar_month_outlined), text: 'Plan'), PlanTab(student: s, me: me)),
+          (const Tab(icon: Icon(Icons.schedule), text: 'Program'), ProgramTab(student: s, me: me)),
+          (const Tab(icon: Icon(Icons.edit_note), text: 'Soru Takibi'), SoruTakibiTab(student: s, me: me)),
+          if (lgs)
+            (const Tab(icon: Icon(Icons.flag_outlined), text: 'LGS Deneme'), LgsTab(student: s, me: me)),
+          if (!okulDisi(s.grade))
+            (const Tab(icon: Icon(Icons.school_outlined), text: 'Okul'), OkulTab(student: s, me: me)),
+          (const Tab(icon: Icon(Icons.menu_book_outlined), text: 'Kitaplar'), BooksTab(student: s, me: me)),
+          (const Tab(icon: Icon(Icons.library_books_outlined), text: 'Test Kitapları'), TestBooksTab(student: s, me: me)),
+          (const Tab(icon: Icon(Icons.quiz_outlined), text: 'Testler'), TestsTab(student: s, me: me)),
+        ];
         return DefaultTabController(
-          length: 11,
+          key: ValueKey(sekmeler.length),
+          length: sekmeler.length,
           child: Scaffold(
             appBar: AppBar(
               automaticallyImplyLeading: !widget.isRoot,
@@ -84,38 +105,14 @@ class _StudentScreenState extends State<StudentScreen> {
                 ),
                 if (widget.isRoot) const LogoutButton(),
               ],
-              bottom: const TabBar(
+              bottom: TabBar(
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
-                tabs: [
-                  Tab(icon: Icon(Icons.dashboard_outlined), text: 'Özet'),
-                  Tab(icon: Icon(Icons.tips_and_updates_outlined), text: 'Önerilerim'),
-                  Tab(icon: Icon(Icons.assignment_outlined), text: 'Ödevler'),
-                  Tab(icon: Icon(Icons.calendar_month_outlined), text: 'Plan'),
-                  Tab(icon: Icon(Icons.schedule), text: 'Program'),
-                  Tab(icon: Icon(Icons.edit_note), text: 'Soru Takibi'),
-                  Tab(icon: Icon(Icons.flag_outlined), text: 'LGS Deneme'),
-                  Tab(icon: Icon(Icons.school_outlined), text: 'Okul'),
-                  Tab(icon: Icon(Icons.menu_book_outlined), text: 'Kitaplar'),
-                  Tab(icon: Icon(Icons.library_books_outlined), text: 'Test Kitapları'),
-                  Tab(icon: Icon(Icons.quiz_outlined), text: 'Testler'),
-                ],
+                tabs: [for (final x in sekmeler) x.$1],
               ),
             ),
             body: TabBarView(
-              children: [
-                OverviewTab(student: s, me: me),
-                OnerilerTab(student: s, me: me),
-                HomeworkTab(student: s, me: me),
-                PlanTab(student: s, me: me),
-                ProgramTab(student: s, me: me),
-                SoruTakibiTab(student: s, me: me),
-                LgsTab(student: s, me: me),
-                OkulTab(student: s, me: me),
-                BooksTab(student: s, me: me),
-                TestBooksTab(student: s, me: me),
-                TestsTab(student: s, me: me),
-              ],
+              children: [for (final x in sekmeler) x.$2],
             ),
           ),
         );
@@ -226,7 +223,7 @@ class _StudentInfoSheetState extends State<StudentInfoSheet> {
     return SheetFrame(
       title: s.name,
       children: [
-        if (me.role.isAdult) ...[
+        if (me.role.isAdult || s.isParent(me.uid)) ...[
           Card(
             color: cs.primaryContainer,
             child: Padding(
