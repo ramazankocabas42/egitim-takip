@@ -149,10 +149,12 @@ class Db {
     AppUser me, {
     required String name,
     required String grade,
+    Map<String, Object?> ayarlar = const {},
   }) async {
     final code = await _freeCode();
     final ref = _students.doc();
     await ref.set({
+      ...ayarlar,
       'name': name,
       'grade': grade,
       'parentIds': [me.uid],
@@ -171,6 +173,10 @@ class Db {
     });
     await _newParentCode(me, ref.id);
   }
+
+  /// Hedef sınav, alan, doğum yılı, dersler, gizli sekmeler.
+  static Future<void> updateStudentAyarlar(String sid, Map<String, Object?> ayarlar) =>
+      _students.doc(sid).update(ayarlar);
 
   static Future<void> updateStudent(String sid,
           {required String name, required String grade}) =>

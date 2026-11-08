@@ -6,6 +6,7 @@ import '../services/guncelleme.dart';
 import '../services/notifications.dart';
 import '../services/sms_aktarici.dart';
 import '../widgets/common.dart';
+import 'ogrenci_profil.dart';
 import 'student_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -150,8 +151,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           'koçunu ya da velini davet kodunla eklersin.'),
                       const SizedBox(height: 12),
                       FilledButton.icon(
-                        onPressed: () => showDialog<void>(
-                            context: context, builder: (_) => _OwnProfileDialog(me: me)),
+                        onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => OgrenciProfilOlusturEkrani(me: me))),
                         icon: const Icon(Icons.person_add_alt_1),
                         label: const Text('Kendi profilimi oluştur'),
                       ),
@@ -418,80 +419,6 @@ class _JoinDialogState extends State<_JoinDialog> {
             child: const Text('Vazgeç')),
         FilledButton(
             onPressed: _busy ? null : _join, child: const Text('Katıl')),
-      ],
-    );
-  }
-}
-
-/// Öğrencinin kendi profilini açması (bireysel kullanım).
-class _OwnProfileDialog extends StatefulWidget {
-  const _OwnProfileDialog({required this.me});
-  final AppUser me;
-
-  @override
-  State<_OwnProfileDialog> createState() => _OwnProfileDialogState();
-}
-
-class _OwnProfileDialogState extends State<_OwnProfileDialog> {
-  late final _name = TextEditingController(text: widget.me.name);
-  String _grade = '12. Sınıf';
-  bool _busy = false;
-
-  @override
-  void dispose() {
-    _name.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    final name = _name.text.trim();
-    if (name.isEmpty) return;
-    setState(() => _busy = true);
-    final ok = await runSafe(
-      context,
-      () => Db.createOwnProfile(widget.me, name: name, grade: _grade),
-      success: 'Profilin hazır.',
-    );
-    if (!mounted) return;
-    if (ok) {
-      Navigator.pop(context);
-    } else {
-      setState(() => _busy = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Kendi profilimi oluştur'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _name,
-            textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(labelText: 'Adın Soyadın'),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            value: _grade,
-            isExpanded: true,
-            decoration: const InputDecoration(labelText: 'Durumun'),
-            items: grades.map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
-            onChanged: (v) => setState(() => _grade = v ?? _grade),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            '9. sınıf ve üstünde "ÖSYM Sınavları" (YKS, KPSS, AGS) bölümü açılır; '
-            '8. sınıf ve altında LGS bölümü görünür.',
-            style: TextStyle(fontSize: 12),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-            onPressed: _busy ? null : () => Navigator.pop(context), child: const Text('Vazgeç')),
-        FilledButton(onPressed: _busy ? null : _save, child: const Text('Oluştur')),
       ],
     );
   }

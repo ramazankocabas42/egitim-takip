@@ -5,6 +5,7 @@ import '../models.dart';
 import '../services/db.dart';
 import '../widgets/common.dart';
 import 'modules/books_tab.dart';
+import 'ogrenci_profil.dart';
 import 'modules/homework_tab.dart';
 import 'modules/lgs_tab.dart';
 import 'modules/okul_tab.dart';
@@ -64,27 +65,45 @@ class _StudentScreenState extends State<StudentScreen> {
                 icon: Icons.person_off_outlined, text: 'Öğrenci bulunamadı.'),
           );
         }
-        final lgs = !okulDisi(s.grade) && (ortaokulVeAlti(s.grade) || s.grade.isEmpty);
-        final osym = !ortaokulVeAlti(s.grade);
+        // Hedef sınav: öğrencinin seçimi, yoksa sınıfına göre tahmin
+        final hedef = s.hedefSinav.isNotEmpty
+            ? s.hedefSinav
+            : (ortaokulVeAlti(s.grade) ? (s.grade == '8. Sınıf' ? 'LGS' : 'okul') : 'YKS');
+        final lgs = hedef == 'LGS' ||
+            (s.hedefSinav.isEmpty && ortaokulVeAlti(s.grade) && !okulDisi(s.grade));
+        final osym = const ['YKS', 'KPSS', 'AGS'].contains(hedef) ||
+            (s.hedefSinav.isEmpty && !ortaokulVeAlti(s.grade));
+        final gizli = s.gizliSekmeler.toSet();
+        DersAyari.aktif = s.dersler;
+        bool acik(String id) => !gizli.contains(id);
         final sekmeler = <(Tab, Widget)>[
           (const Tab(icon: Icon(Icons.dashboard_outlined), text: 'Özet'), OverviewTab(student: s, me: me)),
-          (const Tab(icon: Icon(Icons.tips_and_updates_outlined), text: 'Önerilerim'), OnerilerTab(student: s, me: me)),
+          if (acik('oneriler'))
+            (const Tab(icon: Icon(Icons.tips_and_updates_outlined), text: 'Önerilerim'), OnerilerTab(student: s, me: me)),
           if (osym)
-            (const Tab(icon: Icon(Icons.workspace_premium_outlined), text: 'ÖSYM Sınavları'), OsymTab(student: s, me: me)),
-          (const Tab(icon: Icon(Icons.assignment_outlined), text: 'Ödevler'), HomeworkTab(student: s, me: me)),
-          (const Tab(icon: Icon(Icons.calendar_month_outlined), text: 'Plan'), PlanTab(student: s, me: me)),
-          (const Tab(icon: Icon(Icons.schedule), text: 'Program'), ProgramTab(student: s, me: me)),
-          (const Tab(icon: Icon(Icons.edit_note), text: 'Soru Takibi'), SoruTakibiTab(student: s, me: me)),
+            (const Tab(icon: Icon(Icons.workspace_premium_outlined), text: 'ÖSYM Sınavları'),
+                OsymTab(student: s, me: me, varsayilanGrup: const ['YKS', 'KPSS', 'AGS'].contains(hedef) ? hedef : null)),
           if (lgs)
             (const Tab(icon: Icon(Icons.flag_outlined), text: 'LGS Deneme'), LgsTab(student: s, me: me)),
-          if (!okulDisi(s.grade))
+          if (acik('odevler'))
+            (const Tab(icon: Icon(Icons.assignment_outlined), text: 'Ödevler'), HomeworkTab(student: s, me: me)),
+          if (acik('plan'))
+            (const Tab(icon: Icon(Icons.calendar_month_outlined), text: 'Plan'), PlanTab(student: s, me: me)),
+          if (acik('program'))
+            (const Tab(icon: Icon(Icons.schedule), text: 'Program'), ProgramTab(student: s, me: me)),
+          if (acik('soru'))
+            (const Tab(icon: Icon(Icons.edit_note), text: 'Soru Takibi'), SoruTakibiTab(student: s, me: me)),
+          if (!okulDisi(s.grade) && acik('okul'))
             (const Tab(icon: Icon(Icons.school_outlined), text: 'Okul'), OkulTab(student: s, me: me)),
-          (const Tab(icon: Icon(Icons.menu_book_outlined), text: 'Kitaplar'), BooksTab(student: s, me: me)),
-          (const Tab(icon: Icon(Icons.library_books_outlined), text: 'Test Kitapları'), TestBooksTab(student: s, me: me)),
-          (const Tab(icon: Icon(Icons.quiz_outlined), text: 'Testler'), TestsTab(student: s, me: me)),
+          if (acik('kitaplar'))
+            (const Tab(icon: Icon(Icons.menu_book_outlined), text: 'Kitaplar'), BooksTab(student: s, me: me)),
+          if (acik('testkitaplari'))
+            (const Tab(icon: Icon(Icons.library_books_outlined), text: 'Test Kitapları'), TestBooksTab(student: s, me: me)),
+          if (acik('testler'))
+            (const Tab(icon: Icon(Icons.quiz_outlined), text: 'Testler'), TestsTab(student: s, me: me)),
         ];
         return DefaultTabController(
-          key: ValueKey(sekmeler.length),
+          key: ValueKey(sekmeler.map((x) => x.$1.text).join('|')),
           length: sekmeler.length,
           child: Scaffold(
             appBar: AppBar(
@@ -93,10 +112,22 @@ class _StudentScreenState extends State<StudentScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(s.name),
-                  Text(s.grade, style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                      [
+                        s.grade,
+                        if (hedef != 'okul') hedef + (s.alan.isEmpty ? '' : ' ${s.alan}'),
+                        if (s.yas != null) '${s.yas} yaş',
+                      ].join(' • '),
+                      style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
               actions: [
+                if (s.isParent(me.uid))
+                  IconButton(
+                    tooltip: 'Sınav, dersler ve bölümler',
+                    icon: const Icon(Icons.tune),
+                    onPressed: () => openSheet<void>(context, OgrenciAyarSheet(student: s)),
+                  ),
                 IconButton(
                   tooltip: 'Kişiler ve davet kodu',
                   icon: const Icon(Icons.group_outlined),

@@ -10,6 +10,18 @@ import '../models.dart';
 // ---------------------------------------------------------------------------
 // Sabitler
 // ---------------------------------------------------------------------------
+/// Açık öğrencinin kendi seçtiği dersler (boşsa genel liste kullanılır).
+class DersAyari {
+  DersAyari._();
+  static List<String> aktif = const [];
+  static List<String> secenekler([String? mevcut]) {
+    final l = aktif.isEmpty ? subjects : [...aktif, 'Genel / Karma', 'Diğer'];
+    return [
+      ...{...l, if (mevcut != null && mevcut.isNotEmpty) mevcut},
+    ];
+  }
+}
+
 const subjects = <String>[
   'Türkçe',
   'Matematik',
@@ -432,7 +444,7 @@ class SubjectDropdown extends StatelessWidget {
       value: value,
       isExpanded: true,
       decoration: InputDecoration(labelText: label),
-      items: subjects
+      items: DersAyari.secenekler(value)
           .map((s) => DropdownMenuItem(value: s, child: Text(s)))
           .toList(),
       onChanged: onChanged,

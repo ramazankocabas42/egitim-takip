@@ -16,10 +16,11 @@ String _p(double v) => v.toStringAsFixed(3).replaceAll('.', ',');
 /// ÖSYM SINAVLARIM: YKS (TYT/AYT/YDT), KPSS, AGS/ÖABT sonuçları;
 /// doğru / yanlış / boş, net, puan ve konu bazında eksikler.
 class OsymTab extends StatefulWidget {
-  const OsymTab({super.key, required this.student, required this.me});
+  const OsymTab({super.key, required this.student, required this.me, this.varsayilanGrup});
 
   final Student student;
   final AppUser me;
+  final String? varsayilanGrup;
 
   @override
   State<OsymTab> createState() => _OsymTabState();
@@ -28,7 +29,7 @@ class OsymTab extends StatefulWidget {
 class _OsymTabState extends State<OsymTab> {
   String get sid => widget.student.id;
   late final _sonuclar = LiveValue(OsymDb.sonuclar(sid));
-  String _grup = 'Tümü';
+  late String _grup = widget.varsayilanGrup ?? 'Tümü';
 
   @override
   void dispose() {

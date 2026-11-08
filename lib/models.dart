@@ -74,11 +74,29 @@ class Student {
     required this.parentIds,
     required this.teacherIds,
     required this.studentUid,
+    this.hedefSinav = '',
+    this.alan = '',
+    this.dogumYili,
+    this.dersler = const [],
+    this.gizliSekmeler = const [],
+    this.bireysel = false,
   });
 
   final String id;
   final String name;
   final String grade;
+
+  /// '' (belirtilmemiş), 'okul', 'LGS', 'YKS', 'KPSS', 'AGS'
+  final String hedefSinav;
+
+  /// YKS: SAY / EA / SÖZ / DİL; KPSS: Lisans / Önlisans / Ortaöğretim
+  final String alan;
+  final int? dogumYili;
+  final List<String> dersler;
+  final List<String> gizliSekmeler;
+  final bool bireysel;
+
+  int? get yas => dogumYili == null ? null : DateTime.now().year - dogumYili!;
   final String inviteCode;
   final List<String> parentIds;
   final List<String> teacherIds;
@@ -97,6 +115,12 @@ class Student {
       parentIds: _strList(m['parentIds']),
       teacherIds: _strList(m['teacherIds']),
       studentUid: m['studentUid'] as String?,
+      hedefSinav: _str(m['hedefSinav']),
+      alan: _str(m['alan']),
+      dogumYili: m['dogumYili'] is num ? (m['dogumYili'] as num).toInt() : null,
+      dersler: _strList(m['dersler']),
+      gizliSekmeler: _strList(m['gizliSekmeler']),
+      bireysel: m['bireysel'] == true,
     );
   }
 }

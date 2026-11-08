@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models.dart';
 import '../services/db.dart';
 import '../widgets/common.dart';
+import 'ogrenci_profil.dart';
 
 /// Yeni hesap açıldıktan sonra ad ve rol seçilir.
 class ProfileSetupScreen extends StatefulWidget {
@@ -19,6 +20,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _name = TextEditingController();
   UserRole _role = UserRole.parent;
   bool _busy = false;
+  bool _kendiBasina = true;
+  final _ayar = OgrenciAyarlari.yeni();
 
   @override
   void dispose() {
@@ -31,8 +34,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           'Çocuklarınızı ekler, ödevlerini ve çalışmalarını takip edersiniz. '
               'Her çocuk için oluşan davet kodunu öğretmenlerle ve çocuğunuzla paylaşırsınız.',
         UserRole.student =>
-          'Velinden aldığın davet koduyla kendi sayfana bağlanırsın. '
-              'Ödevini yapınca "Yaptım" butonuna basarsın.',
+          'Hedef sınavına (LGS, YKS, KPSS, AGS) göre çalışmanı, deneme ve ÖSYM sonuçlarını, '
+              'konu eksiklerini kendin takip edersin. İstersen velin ya da öğretmenin de bağlanır.',
         UserRole.teacher =>
           'Velilerin paylaştığı davet kodlarıyla öğrencilerinizi eklersiniz. '
               'Ödev verebilir, kontrol edebilir ve ilerlemeyi izleyebilirsiniz.',
@@ -45,14 +48,26 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       return;
     }
     setState(() => _busy = true);
+    final email = widget.user.email ?? '';
+    final ogrenci = _role == UserRole.student && _kendiBasina;
     await runSafe(
       context,
-      () => Db.createProfile(
-        uid: widget.user.uid,
-        name: name,
-        email: widget.user.email ?? '',
-        role: _role,
-      ),
+      () async {
+        await Db.createProfile(
+          uid: widget.user.uid,
+          name: name,
+          email: email,
+          role: _role,
+        );
+        if (ogrenci) {
+          await Db.createOwnProfile(
+            AppUser(uid: widget.user.uid, name: name, email: email, role: UserRole.student),
+            name: name,
+            grade: _ayar.sinif,
+            ayarlar: _ayar.toMap(),
+          );
+        }
+      },
     );
     if (mounted) setState(() => _busy = false);
   }
@@ -100,6 +115,25 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               child: Text(_roleInfo),
             ),
           ),
+          if (_role == UserRole.student) ...[
+            const SizedBox(height: 12),
+            SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment(
+                    value: true, label: Text('Kendi başıma'), icon: Icon(Icons.person_outline)),
+                ButtonSegment(
+                    value: false, label: Text('Davet kodum var'), icon: Icon(Icons.vpn_key_outlined)),
+              ],
+              selected: {_kendiBasina},
+              onSelectionChanged: (v) => setState(() => _kendiBasina = v.first),
+            ),
+            const SizedBox(height: 16),
+            if (_kendiBasina)
+              OgrenciAyarFormu(ayarlar: _ayar, sekmeler: false)
+            else
+              const Text('Devam ettikten sonra velinden ya da öğretmeninden aldığın 6 haneli '
+                  'kodu "Kodla katıl" ile yazacaksın.'),
+          ],
           const SizedBox(height: 24),
           FilledButton(
             style:
