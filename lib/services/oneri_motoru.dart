@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../lgs.dart';
 import '../models.dart';
+import '../osym.dart';
 import 'okul_db.dart';
+import 'osym_db.dart';
 import 'plan_motoru.dart';
 import 'program_db.dart';
 import 'takip_db.dart';
@@ -71,12 +73,96 @@ class DersOnerisi {
 }
 
 class EksikKonu {
-  EksikKonu(this.ders, this.konu, this.basari, this.soru);
+  EksikKonu(this.ders, this.konu, this.basari, this.soru, {this.hata = 0});
   final String ders;
   final String konu;
-  final double? basari; // null: hiç çalışılmamış
+  final double? basari; // null: hiç çalışılmamış (hata > 0 ise ÖSYM sonucu)
   final int soru;
+
+  /// ÖSYM sınav / deneme sonuçlarında bu konudaki yanlış + boş sayısı.
+  final int hata;
+  bool get zayif => basari != null || hata > 0;
 }
+
+String _norm(String s) => s
+    .toLowerCase()
+    .replaceAll('ı', 'i')
+    .replaceAll('ğ', 'g')
+    .replaceAll('ü', 'u')
+    .replaceAll('ş', 's')
+    .replaceAll('ö', 'o')
+    .replaceAll('ç', 'c')
+    .replaceAll('â', 'a')
+    .replaceAll(RegExp(r'[^a-z0-9 ]'), ' ')
+    .replaceAll(RegExp(r'\s+'), ' ')
+    .trim();
+
+/// ÖSYM testindeki bir konunun öğrencinin hangi dersine ait olduğunu bulur.
+/// "Fizik: Optik" -> Fizik; önek yoksa testin adına bakılır.
+String? osymKonuDersi(OsymTest t, String konu, List<String> dersler) {
+  final i = konu.indexOf(': ');
+  if (i > 0) {
+    final d = _onekDersi(konu.substring(0, i), dersler);
+    if (d != null) return d;
+  }
+  return osymTestDersi(t, dersler);
+}
+
+String? _onekDersi(String onek, List<String> dersler) {
+  final o = _norm(onek);
+  final adaylar = <String>[
+    o,
+    if (o == 'din') 'din kulturu',
+    if (o == 'mantik' || o == 'psikoloji' || o == 'sosyoloji') 'felsefe',
+    if (o == 'cografya') 'turkiye cografyasi',
+    if (o == 'turkce') 'sozel yetenek',
+    if (o == 'matematik' || o == 'geometri') 'sayisal yetenek',
+    if (o == 'geometri') 'matematik',
+  ];
+  for (final a in adaylar) {
+    for (final d in dersler) {
+      final n = _norm(d);
+      if (n == a || n.startsWith('$a ') || (a.length > 3 && n.contains(a))) return d;
+    }
+  }
+  return null;
+}
+
+String? osymTestDersi(OsymTest t, List<String> dersler) {
+  final adlar = [t.ad, ...t.takmaAdlar];
+  for (final a in adlar) {
+    final na = _norm(a);
+    for (final d in dersler) {
+      if (_norm(d) == na) return d;
+    }
+  }
+  for (final a in adlar) {
+    final na = _norm(a);
+    for (final d in dersler) {
+      final nd = _norm(d);
+      if (nd.length > 3 && (na.contains(nd) || nd.contains(na))) return d;
+    }
+  }
+  return null;
+}
+
+/// Bir ÖSYM testinin kapsadığı dersler (konu önekleri + test adı).
+Set<String> osymTestDersleri(OsymTest t, List<String> dersler) {
+  final s = <String>{};
+  for (final k in t.konular) {
+    final d = osymKonuDersi(t, k, dersler);
+    if (d != null) s.add(d);
+  }
+  final d = osymTestDersi(t, dersler);
+  if (d != null) s.add(d);
+  return s;
+}
+
+const _palet = [
+  Color(0xFFE53935), Color(0xFF1E88E5), Color(0xFF43A047), Color(0xFF8E24AA),
+  Color(0xFFF9A825), Color(0xFF6D4C41), Color(0xFF00897B), Color(0xFF3949AB),
+  Color(0xFFD81B60), Color(0xFF546E7A),
+];
 
 enum Onem { kritik, onemli, bilgi, iyi }
 
@@ -123,8 +209,52 @@ class OneriMotoru {
     required this.plan,
     required this.programHaftasi,
     this.duzen,
+    this.profil = 'LGS',
+    this.dersAdlari = const [],
+    this.osym = const [],
+    this.okulVar = true,
     DateTime? simdi,
   }) : simdi = simdi ?? DateTime.now();
+
+  /// Öğrencinin hedefi: LGS | YKS | KPSS | AGS | okul
+  final String profil;
+
+  /// Öğrencinin profilindeki dersler (LGS dışında öneriler bunlara göre).
+  final List<String> dersAdlari;
+
+  /// ÖSYM sınav ve deneme sonuçları (yeniden eskiye).
+  final List<OsymSonuc> osym;
+
+  /// Öğrenci okula devam ediyor mu (okul notları değerlendirilsin mi)?
+  final bool okulVar;
+
+  bool get _lgs => profil == 'LGS';
+  bool get _osymMi => const ['YKS', 'KPSS', 'AGS'].contains(profil);
+
+  int get gunlukSoruHedefi => switch (profil) {
+        'LGS' => 60,
+        'YKS' => 120,
+        'KPSS' || 'AGS' => 100,
+        _ => 30,
+      };
+
+  /// Haftalık önerilen çalışma (saat): alt-üst.
+  (int, int) get haftalikSaat => switch (profil) {
+        'LGS' => (10, 15),
+        'YKS' => (25, 35),
+        'KPSS' || 'AGS' => (20, 30),
+        _ => (6, 10),
+      };
+
+  String get _sinavAdi => switch (profil) {
+        'AGS' => 'AGS / ÖABT',
+        'okul' => 'okul',
+        _ => profil,
+      };
+
+  /// İlgili ÖSYM sonuçları (hedef sınav grubunda).
+  List<OsymSonuc> get _osymSonuclari =>
+      osym.where((x) => osymTuru(x.tur)?.grup == profil).toList();
 
   final List<SoruGirisi> sorular;
   final List<LgsDeneme> denemeler; // yeniden eskiye
@@ -135,8 +265,6 @@ class OneriMotoru {
   final List<GunAnalizi>? programHaftasi; // etkinlik girilmediyse null
   final GunDuzeni? duzen;
   final DateTime simdi;
-
-  static const gunlukSoruHedefi = 60;
 
   OneriRaporu rapor() {
     final bugun = DateTime(simdi.year, simdi.month, simdi.day);
@@ -170,9 +298,37 @@ class OneriMotoru {
     ));
 
     // ---- 2) Denemeler ----
-    final son3 = denemeler.take(3).toList();
+    final lgsDeneme = _lgs || (profil == 'okul' && denemeler.isNotEmpty);
+    final son3 = lgsDeneme ? denemeler.take(3).toList() : <LgsDeneme>[];
     double? denemeSkor;
     double? ortPuan, ortNet;
+    final osymSon = _osymSonuclari;
+    final osym3 = osymSon.take(3).toList();
+    double? osymOran;
+    if (_osymMi) {
+      if (osym3.isNotEmpty) {
+        osymOran = osym3.fold<double>(
+                0.0,
+                (s, x) => s +
+                    (x.toplamSoru == 0 ? 0.0 : x.toplamNet.clamp(0.0, 999.0).toDouble() / x.toplamSoru)) /
+            osym3.length;
+        denemeSkor = (osymOran * 100).clamp(0, 100).toDouble();
+      }
+      final resmi = osymSon.where((x) => x.resmi).length;
+      alanlar.add(Alan(
+        '$_sinavAdi sınav ve denemeleri',
+        Icons.workspace_premium_outlined,
+        denemeSkor,
+        osymOran == null ? '—' : '%${(osymOran * 100).round()} net',
+        osym3.isEmpty
+            ? 'Henüz $_sinavAdi sonucu yok. ÖSYM Sınavları sekmesinden sonuç aktarın'
+                '${profil == 'AGS' ? ' ya da AGS Hazırlık\'ta günlük deneme çözün' : ''}.'
+            : 'Son ${osym3.length} sonucun net oranı ortalaması '
+                '(${osym3.map((x) => '${x.tur} ${x.toplamNet.toStringAsFixed(1)}/${x.toplamSoru}').join(', ')}). '
+                'Toplam ${osymSon.length} kayıt, $resmi tanesi ÖSYM sınavı.',
+        0.30,
+      ));
+    }
     if (son3.isNotEmpty) {
       ortNet = son3.fold<double>(0, (s, d) => s + d.toplamNet) / son3.length;
       ortPuan = son3.fold<double>(0, (s, d) => s + d.gosterilenPuan) / son3.length;
@@ -182,7 +338,7 @@ class OneriMotoru {
           ? (netSkor + (ortPuan / h * 100).clamp(0, 100)) / 2
           : netSkor;
     }
-    alanlar.add(Alan(
+    if (lgsDeneme) alanlar.add(Alan(
       'LGS denemeleri',
       Icons.flag_outlined,
       denemeSkor,
@@ -214,7 +370,7 @@ class OneriMotoru {
       okulOrt = t / w;
       okulZayif.sort((a, b) => a.$2.compareTo(b.$2));
     }
-    alanlar.add(Alan(
+    if (okulVar) alanlar.add(Alan(
       'Okul notları',
       Icons.school_outlined,
       okulOrt,
@@ -280,7 +436,7 @@ class OneriMotoru {
     alanlar.add(Alan(
       'Çalışma zamanı',
       Icons.schedule,
-      haftalikCalisma == null ? null : (haftalikCalisma / 600 * 100).clamp(0, 100).toDouble(),
+      haftalikCalisma == null ? null : (haftalikCalisma / (haftalikSaat.$1 * 60) * 100).clamp(0, 100).toDouble(),
       haftalikCalisma == null ? '—' : sureYaz(haftalikCalisma),
       haftalikCalisma == null
           ? 'Program sekmesine okul/dershane saatleri girilmemiş.'
@@ -289,8 +445,10 @@ class OneriMotoru {
     ));
 
     // ---- Ders öncelikleri ----
-    final motor = PlanMotoru(sorular: sorular, denemeler: denemeler, simdi: simdi);
-    final durum = motor.dersDurumlari()..sort((a, b) => b.ihtiyac.compareTo(a.ihtiyac));
+    final durum = (_lgs
+        ? PlanMotoru(sorular: sorular, denemeler: denemeler, simdi: simdi).dersDurumlari()
+        : _genelDersDurumlari(bugun, dersNot, osym3))
+      ..sort((a, b) => b.ihtiyac.compareTo(a.ihtiyac));
     final toplamIhtiyac = durum.fold<double>(0, (s, d) => s + d.ihtiyac);
     final haftalikBlok = haftalikCalisma == null
         ? 14
@@ -304,8 +462,10 @@ class OneriMotoru {
       final neden = <String>[];
       if (on != null) neden.add('deneme ort. ${on.toStringAsFixed(1)}/${d.ders.soru} net');
       if (d.basari != null) neden.add('başarı %${(d.basari! * 100).round()}');
+      if (!_lgs) neden.addAll(_genelNeden[d.ders.ad] ?? const []);
       neden.add(d.soru == 0 ? '14 günde soru yok' : '14 günde ${d.soru} soru');
-      if (d.ders.katsayi == 4) neden.add('katsayı 4');
+      if (_lgs && d.ders.katsayi == 4) neden.add('katsayı 4');
+      if (_osymMi && d.ders.soru > 0) neden.add('sınavda ~${d.ders.soru} soru');
       dersler.add(DersOnerisi(
         ders: d.ders,
         basari: d.basari,
@@ -324,7 +484,7 @@ class OneriMotoru {
     }
 
     // ---- Öneriler ----
-    final h = hedef?.puan;
+    final h = _lgs ? hedef?.puan : null;
     if (h != null && ortPuan != null) {
       final fark = h - ortPuan;
       final enKazanc = List.of(dersler)..sort((a, b) => b.kazanc.compareTo(a.kazanc));
@@ -340,12 +500,14 @@ class OneriMotoru {
         oneriler.add(Oneri(Onem.iyi, Icons.emoji_events,
             'Deneme ortalaması hedefin üzerinde (${ortPuan.toStringAsFixed(0)}). Bu seviyeyi korumak için düzenli deneme çözmeye devam.'));
       }
-    } else if (h == null && son3.isNotEmpty) {
+    } else if (_lgs && h == null && son3.isNotEmpty) {
       oneriler.add(Oneri(Onem.bilgi, Icons.flag_outlined,
           'LGS Deneme sekmesinden hedef puan girerseniz hedefe olan mesafe de hesaplanır.'));
     }
 
-    if (denemeler.length >= 4) {
+    if (_osymMi) _osymOnerileri(oneriler, osymSon, bugun);
+
+    if (lgsDeneme && denemeler.length >= 4) {
       final onceki = denemeler.skip(3).take(3).toList();
       final oOrt = onceki.fold<double>(0, (s, d) => s + d.gosterilenPuan) / onceki.length;
       final fark = (ortPuan ?? 0) - oOrt;
@@ -369,7 +531,7 @@ class OneriMotoru {
     }
 
     // Yanlış oranı yüksek dersler
-    for (final d in lgsDersler) {
+    for (final d in lgsDeneme ? lgsDersler : const <LgsDers>[]) {
       final t = son3.fold<Dyb>(Dyb.bos, (a, x) => a + (x.dersler[d.ad] ?? Dyb.bos));
       if (t.d + t.y < 6) continue;
       final yOran = t.y / (t.d + t.y);
@@ -380,19 +542,19 @@ class OneriMotoru {
       }
     }
 
-    final zayifKonu = eksikKonular.where((k) => k.basari != null).take(4).toList();
+    final zayifKonu = eksikKonular.where((k) => k.zayif).take(5).toList();
     if (zayifKonu.isNotEmpty) {
       oneriler.add(Oneri(
           Onem.onemli,
           Icons.replay,
           'Tekrar edilmesi gereken konular: '
-          '${zayifKonu.map((k) => '${k.konu} (%${(k.basari! * 100).round()})').join(', ')}.'));
+          '${zayifKonu.map((k) => k.basari != null ? '${k.konu} (%${(k.basari! * 100).round()})' : '${k.konu} (${k.hata} hata)').join(', ')}.'));
     }
 
-    if (sorular.isNotEmpty && gunluk < 40) {
-      oneriler.add(Oneri(gunluk < 20 ? Onem.kritik : Onem.onemli, Icons.speed,
-          'Son 14 günde günde ortalama ${gunluk.round()} soru çözülmüş. LGS için günde '
-          '$gunlukSoruHedefi-80 soru hedeflenmeli.'));
+    if (sorular.isNotEmpty && gunluk < gunlukSoruHedefi * 2 / 3) {
+      oneriler.add(Oneri(gunluk < gunlukSoruHedefi / 3 ? Onem.kritik : Onem.onemli, Icons.speed,
+          'Son 14 günde günde ortalama ${gunluk.round()} soru çözülmüş. $_sinavAdi için günde '
+          'en az $gunlukSoruHedefi soru hedeflenmeli.'));
     } else if (sorular.isEmpty) {
       oneriler.add(Oneri(Onem.bilgi, Icons.edit_note,
           'Soru Takibi sekmesine günlük çözülen soruları girerseniz öneriler çok daha isabetli olur.'));
@@ -424,7 +586,7 @@ class OneriMotoru {
 
     for (final z in okulZayif.take(2)) {
       oneriler.add(Oneri(z.$2 < 50 ? Onem.kritik : Onem.onemli, Icons.school,
-          'Okulda ${z.$1} ortalaması ${z.$2.toStringAsFixed(1)}. Takdir/teşekkür için bu derse destek gerekli.'));
+          'Okulda ${z.$1} ortalaması ${z.$2.toStringAsFixed(1)}. Bu derse destek gerekli.'));
     }
 
     if (ph != null) {
@@ -434,10 +596,12 @@ class OneriMotoru {
             '${sifir.join(', ')} programda ders çalışmaya zaman kalmıyor; o günler dinlenme günü sayılabilir ya da kısa tekrar yapılabilir.'));
       }
       final hc = haftalikCalisma ?? 0;
-      if (hc < 8 * 60) {
+      final (alt, ust) = haftalikSaat;
+      if (hc < alt * 60 * 0.8) {
         oneriler.add(Oneri(Onem.onemli, Icons.hourglass_bottom,
-            'Haftalık çalışmaya ayrılabilen süre ${sureYaz(hc)}. LGS dönemi için '
-            'haftada 10-15 saat önerilir; hafta sonu saatlerini gözden geçirin.'));
+            'Haftalık çalışmaya ayrılabilen süre ${sureYaz(hc)}. '
+            '${profil == 'okul' ? 'Okul dersleri' : '$_sinavAdi hazırlığı'} için '
+            'haftada $alt-$ust saat önerilir; boş saatleri gözden geçirin.'));
       }
     } else {
       oneriler.add(Oneri(Onem.bilgi, Icons.schedule,
@@ -452,7 +616,7 @@ class OneriMotoru {
             'Telefon / ekran süresi haftada ${sureYaz(haftalikTel)}. Bunun bir kısmını çalışmaya '
             'ayırmak haftada ${sureYaz((haftalikTel - 5 * 90 - 2 * 120).clamp(0, 9999))} ek çalışma zamanı kazandırır.'));
       } else if (haftalikCalisma != null &&
-          haftalikCalisma < 8 * 60 &&
+          haftalikCalisma < haftalikSaat.$1 * 60 * 0.8 &&
           haftalikTel >= 5 * 60) {
         oneriler.add(Oneri(Onem.bilgi, Icons.smartphone,
             'Çalışma süresi az, telefon süresi haftada ${sureYaz(haftalikTel)}. Günde 30 dk '
@@ -482,6 +646,145 @@ class OneriMotoru {
     );
   }
 
+  /// LGS dışı: dersin hazır olma durumu (soru takibi + ÖSYM sonuçları + okul).
+  final _genelNeden = <String, List<String>>{};
+
+  List<String> get _dersListesi {
+    if (dersAdlari.isNotEmpty) return dersAdlari;
+    final s = <String>{};
+    for (final e in sorular) {
+      s.addAll(e.dersBazli.keys);
+    }
+    return s.toList();
+  }
+
+  List<DersDurumu> _genelDersDurumlari(
+      DateTime bugun, Map<String, List<double>> dersNot, List<OsymSonuc> osym3) {
+    final adlar = _dersListesi;
+    final sinir = bugun.subtract(const Duration(days: 14));
+    final top = <String, Dyb>{};
+    for (final e in sorular.where((e) => e.tarih.isAfter(sinir))) {
+      e.dersBazli.forEach((k, v) => top[k] = (top[k] ?? Dyb.bos) + v);
+    }
+    // ÖSYM: ders -> net oranları; ders -> sınavdaki soru sayısı
+    final denemeOran = <String, List<double>>{};
+    final soruSayisi = <String, double>{};
+    final renk = <String, Color>{};
+    for (final t in [for (final s in osymSinavlari.where((s) => s.grup == profil)) ...s.testler]) {
+      final ds = osymTestDersleri(t, adlar);
+      for (final d in ds) {
+        soruSayisi[d] = (soruSayisi[d] ?? 0) + t.soru / ds.length;
+        renk[d] ??= t.renk;
+      }
+    }
+    for (final x in osym3) {
+      final tanim = x.tanim;
+      if (tanim == null) continue;
+      x.testler.forEach((id, ts) {
+        final t = tanim.test(id);
+        if (t == null || ts.soru == 0) return;
+        final oran = (ts.net(x.bolen) / ts.soru).clamp(0.0, 1.0);
+        for (final d in osymTestDersleri(t, adlar)) {
+          denemeOran.putIfAbsent(d, () => []).add(oran);
+        }
+      });
+    }
+    final enCokSoru = soruSayisi.values.fold<double>(1, (a, b) => b > a ? b : a);
+    var i = 0;
+    return adlar.map((ad) {
+      final neden = <String>[];
+      final oranlar = <double>[];
+      final s = top[ad];
+      if (s != null && s.toplam >= 5) {
+        oranlar.add(s.basari);
+        neden.add('soru takibi %${(s.basari * 100).round()}');
+      }
+      final dn = denemeOran[ad];
+      if (dn != null && dn.isNotEmpty) {
+        final o = dn.reduce((a, b) => a + b) / dn.length;
+        oranlar.add(o);
+        neden.add('sınav/deneme %${(o * 100).round()} net');
+      }
+      final notlar = dersNot[ad];
+      if (okulVar && notlar != null && notlar.isNotEmpty) {
+        final o = notlar.reduce((a, b) => a + b) / notlar.length;
+        oranlar.add(o / 100);
+        neden.add('okul ${o.toStringAsFixed(0)}');
+      }
+      _genelNeden[ad] = neden;
+      final basari = oranlar.isEmpty ? null : oranlar.reduce((a, b) => a + b) / oranlar.length;
+      final soru = (soruSayisi[ad] ?? 0).round();
+      final agirlik = _osymMi
+          ? (soru == 0 ? 0.3 : 0.3 + 0.7 * soru / enCokSoru)
+          : dersAgirligi(ad) / 5;
+      var ihtiyac = agirlik * (1.15 - (basari ?? 0.55));
+      if ((s?.toplam ?? 0) < 20) ihtiyac += 0.12 * agirlik;
+      final ders = LgsDers(
+        ad: ad,
+        kisa: ad,
+        soru: soru,
+        katsayi: 1,
+        ikon: Icons.menu_book_outlined,
+        renk: renk[ad] ?? _palet[i++ % _palet.length],
+      );
+      return DersDurumu(ders, basari, s?.toplam ?? 0, ihtiyac);
+    }).toList();
+  }
+
+  /// ÖSYM sonuçlarına dayalı öneriler (YKS / KPSS / AGS).
+  void _osymOnerileri(List<Oneri> oneriler, List<OsymSonuc> son, DateTime bugun) {
+    if (son.isEmpty) {
+      oneriler.add(Oneri(Onem.bilgi, Icons.workspace_premium_outlined,
+          profil == 'AGS'
+              ? 'AGS Hazırlık sekmesinden her gün yeni denemeyi çözün; sonuçlar buraya yansır ve eksik konular çıkarılır. '
+                  'Geçmiş AGS / KPSS sonuçlarınızı ÖSYM Sınavları sekmesinden aktarabilirsiniz.'
+              : 'ÖSYM Sınavları sekmesinden girdiğiniz $_sinavAdi sınavlarını ve denemeleri ekleyin; '
+                  'net ve konu eksikleri buraya yansır.'));
+      return;
+    }
+    double oran(OsymSonuc x) => x.toplamSoru == 0 ? 0.0 : x.toplamNet / x.toplamSoru;
+    if (son.length >= 4) {
+      final a = son.take(3).map(oran).reduce((p, q) => p + q) / 3;
+      final b = son.skip(3).take(3).map(oran).reduce((p, q) => p + q) /
+          son.skip(3).take(3).length;
+      final fark = (a - b) * 100;
+      if (fark <= -5) {
+        oneriler.add(Oneri(Onem.kritik, Icons.trending_down,
+            'Son 3 $_sinavAdi sonucunda net oranı öncekilere göre ${(-fark).round()} puan düştü. '
+            'Yanlış yapılan konuları tekrar edin.'));
+      } else if (fark >= 5) {
+        oneriler.add(Oneri(Onem.iyi, Icons.trending_up,
+            'Son 3 $_sinavAdi sonucunda net oranı ${fark.round()} puan yükseldi 👏'));
+      }
+    }
+    // Yanlış oranı yüksek testler (son 3)
+    final testToplam = <String, (int, int, String)>{};
+    for (final x in son.take(3)) {
+      final tanim = x.tanim;
+      x.testler.forEach((id, t) {
+        final ad = tanim?.test(id)?.ad ?? id;
+        final o = testToplam[ad] ?? (0, 0, ad);
+        testToplam[ad] = (o.$1 + t.d, o.$2 + t.y, ad);
+      });
+    }
+    for (final e in testToplam.values) {
+      if (e.$1 + e.$2 < 6) continue;
+      final yOran = e.$2 / (e.$1 + e.$2);
+      if (yOran >= 0.3) {
+        oneriler.add(Oneri(Onem.onemli, Icons.close,
+            '${e.$3} testinde yanlış oranı yüksek (%${(yOran * 100).round()}). '
+            '4 yanlış 1 doğruyu götürür: emin olmadığın soruyu boş bırak.'));
+      }
+    }
+    final sonTarih = son.first.tarih;
+    final gun = bugun.difference(DateTime(sonTarih.year, sonTarih.month, sonTarih.day)).inDays;
+    if (gun >= 7) {
+      oneriler.add(Oneri(Onem.onemli, Icons.event_repeat,
+          'Son $_sinavAdi denemesi $gun gün önce. Haftada en az 2 deneme çözmek sınav temposunu korur'
+          '${profil == 'AGS' ? '; AGS Hazırlık\'taki günlük deneme 20 soruluk ve 30 dakikada biter' : ''}.'));
+    }
+  }
+
   /// Zayıf konular (son 45 gün, konu girişleri) + hiç çalışılmamış LGS konuları.
   List<EksikKonu> _eksikKonular(DateTime bugun) {
     final sinir = bugun.subtract(const Duration(days: 45));
@@ -499,6 +802,31 @@ class OneriMotoru {
           EksikKonu(e.key.split('|').first, e.key.split('|').last, e.value.basari,
               e.value.toplam),
     ]..sort((a, b) => a.basari!.compareTo(b.basari!));
+    // ÖSYM sonuçlarındaki konu eksikleri (son 6 sonuç)
+    final osymHata = <String, int>{};
+    final osymDers = <String, String>{};
+    if (_osymMi) {
+      final adlar = _dersListesi;
+      for (final x in _osymSonuclari.take(6)) {
+        final tanim = x.tanim;
+        x.konuHata.forEach((anahtar, n) {
+          final i = anahtar.indexOf('|');
+          if (i < 0 || n <= 0) return;
+          final t = tanim?.test(anahtar.substring(0, i));
+          final konu = anahtar.substring(i + 1);
+          final ders = (t == null ? null : osymKonuDersi(t, konu, adlar)) ?? t?.ad ?? '';
+          final k = '$ders|$konu';
+          osymHata[k] = (osymHata[k] ?? 0) + n;
+          osymDers[k] = ders;
+        });
+      }
+    }
+    final osymZayif = <EksikKonu>[
+      for (final e in osymHata.entries)
+        EksikKonu(osymDers[e.key]!, e.key.split('|').last.replaceFirst(RegExp(r'^[^:]+: '), ''),
+            null, 0, hata: e.value),
+    ]..sort((a, b) => b.hata.compareTo(a.hata));
+    if (!_lgs) return [...zayif, ...osymZayif];
     final calisilmamis = <EksikKonu>[
       for (final d in lgsDersler)
         for (final k in (lgsKonular[d.ad] ?? const <String>[]))

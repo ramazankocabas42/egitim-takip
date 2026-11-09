@@ -5,10 +5,12 @@ import '../../models.dart';
 import '../../services/db.dart';
 import '../../services/okul_db.dart';
 import '../../services/oneri_motoru.dart';
+import '../../services/osym_db.dart';
 import '../../services/program_db.dart';
 import '../../services/takip_db.dart';
 import '../../widgets/common.dart';
 import '../../widgets/grafik.dart';
+import '../ogrenci_profil.dart' show dersOnerisi, hedefOnerisi;
 
 Color _onemRenk(Onem o) => switch (o) {
       Onem.kritik => const Color(0xFFC62828),
@@ -46,10 +48,14 @@ class _OnerilerTabState extends State<OnerilerTab> {
   late final _plan = LiveValue(TakipDb.plan(sid, haftaAnahtari(DateTime.now())));
   late final _etkinlikler = LiveValue(ProgramDb.etkinlikler(sid));
   late final _duzen = LiveValue(ProgramDb.duzen(sid));
+  late final _osym = LiveValue(OsymDb.sonuclar(sid));
   bool _tumKonular = false;
 
   List<LiveValue<Object?>> get _hepsi =>
-      [_sorular, _denemeler, _hedef, _okul, _odevler, _plan, _etkinlikler, _duzen];
+      [_sorular, _denemeler, _hedef, _okul, _odevler, _plan, _etkinlikler, _duzen, _osym];
+
+  Student get s => widget.student;
+  String get _profil => s.hedefSinav.isNotEmpty ? s.hedefSinav : hedefOnerisi(s.grade);
 
   @override
   void dispose() {
@@ -83,6 +89,10 @@ class _OnerilerTabState extends State<OnerilerTab> {
               : ZamanMotoru(etk, _duzen.value ?? const GunDuzeni())
                   .hafta(plan: _plan.value),
           duzen: _duzen.value,
+          profil: _profil,
+          dersAdlari: s.dersler.isNotEmpty ? s.dersler : dersOnerisi(s.grade, _profil, s.alan),
+          osym: _osym.value ?? const [],
+          okulVar: !okulDisi(s.grade),
         ).rapor();
         return _govde(context, rapor);
       },
@@ -92,8 +102,22 @@ class _OnerilerTabState extends State<OnerilerTab> {
   Widget _govde(BuildContext context, OneriRaporu r) {
     final genel = r.genel;
     final skor = r.genelSkor;
-    final zayif = r.eksikKonular.where((k) => k.basari != null).toList();
-    final calisilmamis = r.eksikKonular.where((k) => k.basari == null).toList();
+    final zayif = r.eksikKonular.where((k) => k.zayif).toList();
+    final calisilmamis = r.eksikKonular.where((k) => !k.zayif).toList();
+    final dersRenk = {for (final d in r.dersler) d.ders.ad: d.ders};
+    final kaynakMetni = switch (_profil) {
+      'LGS' => 'son 3 LGS denemesi, ',
+      'YKS' || 'KPSS' || 'AGS' => 'son $_profil sınav ve deneme sonuçları (konu eksikleriyle), ',
+      _ => '',
+    };
+    final profil = _profil;
+    final baslik = switch (profil) {
+      'LGS' => 'LGS hazırlığı',
+      'YKS' => 'YKS hazırlığı${s.alan.isEmpty ? '' : ' (${s.alan})'}',
+      'KPSS' => 'KPSS hazırlığı',
+      'AGS' => 'AGS / ÖABT hazırlığı',
+      _ => '${s.grade} okul dersleri',
+    };
     return ListView(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 32),
       children: [
@@ -113,7 +137,7 @@ class _OnerilerTabState extends State<OnerilerTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Genel durum', style: TextStyle(fontSize: 14)),
+                    Text('Genel durum • $baslik', style: const TextStyle(fontSize: 14)),
                     Row(
                       children: [
                         Icon(genel.ikon, size: 28),
@@ -194,15 +218,15 @@ class _OnerilerTabState extends State<OnerilerTab> {
           const Card(
               child: Padding(
             padding: EdgeInsets.all(14),
-            child: Text('Soru Takibi\'nde konu bazlı giriş yapıldıkça başarısı düşük '
-                'konular burada listelenir.'),
+            child: Text('Soru Takibi\'nde konu bazlı giriş yapıldıkça ve ÖSYM / deneme '
+                'sonuçlarında yanlış yapılan konular işlendikçe eksik konular burada listelenir.'),
           ))
         else
           Card(
             child: Column(
               children: [
                 for (final k in zayif.take(_tumKonular ? zayif.length : 8))
-                  _konuSatiri(k),
+                  _konuSatiri(k, dersRenk[k.ders]),
                 if (zayif.length > 8)
                   TextButton(
                     onPressed: () => setState(() => _tumKonular = !_tumKonular),
@@ -244,13 +268,17 @@ class _OnerilerTabState extends State<OnerilerTab> {
             ),
           ),
         ],
-        const Padding(
-          padding: EdgeInsets.fromLTRB(4, 14, 4, 0),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 14, 4, 0),
           child: Text(
-            'Değerlendirme; son 14 günün soru girişleri, son 3 LGS denemesi, bu dönemin okul '
-            'notları, son 30 günün ödevleri, bu haftanın planı ve haftalık programdaki boş zamana '
-            'göre otomatik hesaplanır. 75 ve üzeri İyi, 55-75 Orta, 55 altı Kötü sayılır.',
-            style: TextStyle(fontSize: 11.5, color: Colors.grey),
+            'Değerlendirme öğrencinin kayıtlı sınıfına (${s.grade}) ve hedefine ($baslik) göre; '
+            'profildeki dersler, son 14 günün soru girişleri, '
+            '$kaynakMetni'
+            '${okulDisi(s.grade) ? '' : 'bu dönemin okul notları, '}'
+            'son 30 günün ödevleri, bu haftanın planı ve haftalık programdaki boş zamana göre '
+            'otomatik hesaplanır. 75 ve üzeri İyi, 55-75 Orta, 55 altı Kötü sayılır. Sınıf veya '
+            'hedef değişirse öğrenci ayarlarından güncelleyin.',
+            style: const TextStyle(fontSize: 11.5, color: Colors.grey),
           ),
         ),
       ],
@@ -353,16 +381,21 @@ class _OnerilerTabState extends State<OnerilerTab> {
     );
   }
 
-  Widget _konuSatiri(EksikKonu k) {
-    final d = lgsDers(k.ders);
+  Widget _konuSatiri(EksikKonu k, LgsDers? pd) {
+    final d = lgsDers(k.ders) ?? pd;
     final renk = d?.renk ?? Colors.blueGrey;
-    final sv = seviyeOf(k.basari! * 100);
+    final osymdan = k.basari == null;
+    final sv = osymdan
+        ? (k.hata >= 3 ? Seviye.kotu : Seviye.orta)
+        : seviyeOf(k.basari! * 100);
     return ListTile(
       dense: true,
       leading: Icon(d?.ikon ?? Icons.book_outlined, color: renk),
       title: Text(k.konu, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text('${k.ders} • ${k.soru} soru'),
-      trailing: _SeviyeRozeti(sv, '%${(k.basari! * 100).round()}'),
+      subtitle: Text(osymdan
+          ? '${k.ders} • sınav / deneme sonuçlarında ${k.hata} yanlış-boş'
+          : '${k.ders} • ${k.soru} soru'),
+      trailing: _SeviyeRozeti(sv, osymdan ? '${k.hata} hata' : '%${(k.basari! * 100).round()}'),
     );
   }
 }
