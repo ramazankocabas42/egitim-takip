@@ -38,6 +38,50 @@ String _tiklaJs(String metin) => '''
 })(${jsonEncode(metin)});
 ''';
 
+/// Yeni pencerede açılan bağlantılar (target=_blank, window.open) WebView'da
+/// hiçbir şey yapmaz; bunları aynı pencerede açtırır.
+const pencereJs = r'''
+(function(){
+  if(window.__ettPencere) return 'ok';
+  window.__ettPencere = 1;
+  window.open = function(u){ if(u){ try{ location.href = new URL(u, location.href).href; }catch(e){ location.href = u; } } return window; };
+  function duzelt(){
+    var l = document.querySelectorAll('a[target],form[target]');
+    for(var i=0;i<l.length;i++){ l[i].removeAttribute('target'); }
+  }
+  duzelt();
+  try{ new MutationObserver(duzelt).observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
+  return 'ok';
+})();
+''';
+
+const _secici = 'a,button,input[type=button],input[type=submit],[onclick]';
+
+/// Tablo satırlarındaki "Görüntüle" / "İncele" / "Detay" düğmeleri: [satır metni, sıra].
+const _goruntuleJs = r'''
+(function(){
+  var el = document.querySelectorAll('a,button,input[type=button],input[type=submit],[onclick]');
+  var out = [];
+  for(var i=0;i<el.length;i++){
+    var e = el[i];
+    var t = ((e.textContent || e.value || '') + '').replace(/\s+/g,' ').trim();
+    if(!/g[öo]r[üu]nt[üu]le|incele|detay/i.test(t)) continue;
+    var tr = e.closest ? e.closest('tr') : null;
+    var r = tr ? (tr.textContent || '').replace(/\s+/g,' ').trim() : t;
+    out.push([r.slice(0,160), i]);
+  }
+  return JSON.stringify(out);
+})();
+''';
+
+String _siraylaTiklaJs(int i) => '''
+(function(){
+  var el = document.querySelectorAll('$_secici');
+  if(el[$i]){ el[$i].click(); return 'ok'; }
+  return 'yok';
+})();
+''';
+
 /// ÖSYM Aday İşlemleri Sistemi'ne uygulama içinden giriş. T.C. kimlik no ve
 /// şifre yalnızca ÖSYM / e-Devlet sayfasına yazılır, uygulamada saklanmaz.
 /// Gezilen sayfalardaki test bazında doğru / yanlış / boş sayıları ve puanlar
@@ -73,6 +117,7 @@ class _OsymEkraniState extends State<OsymEkrani> {
           if (mounted) setState(() => _ilerleme = p);
         },
         onPageFinished: (url) {
+          _c.runJavaScript(pencereJs).catchError((_) {});
           final y = _yuklendi;
           if (y != null && !y.isCompleted) y.complete();
           if (_esitleniyor) return;
@@ -118,7 +163,8 @@ class _OsymEkraniState extends State<OsymEkrani> {
         final k = KitapKatalog.kelimelereAyir(l.$1).join(' ');
         return k.contains('sonuc') || k.contains('cevap kagidi');
       });
-      if (!sonucLinki && _toplanan.isEmpty) return;
+      final goruntule = (await _goruntuleler()).isNotEmpty;
+      if (!sonucLinki && !goruntule && _toplanan.isEmpty) return;
       _otomatikDenendi = true;
       await _esitle();
     } catch (_) {}
@@ -162,6 +208,32 @@ class _OsymEkraniState extends State<OsymEkrani> {
     }
   }
 
+  Future<List<(String, int)>> _goruntuleler() async {
+    try {
+      final r = await _js(_goruntuleJs);
+      if (r is! List) return const [];
+      return [
+        for (final x in r)
+          if (x is List && x.length >= 2 && x[1] is num) (x[0].toString(), (x[1] as num).toInt()),
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// Liste sayfasına geri dön (önce geri tuşu, olmazsa adresi yeniden aç).
+  Future<void> _listeyeDon(String? ana) async {
+    if (ana == null || await _c.currentUrl() == ana) return;
+    if (await _c.canGoBack()) {
+      await _bekle(() => _c.goBack(), sure: const Duration(seconds: 8));
+      await Future<void>.delayed(const Duration(milliseconds: 700));
+    }
+    if (await _c.currentUrl() != ana) {
+      await _bekle(() => _c.loadRequest(Uri.parse(ana)), sure: const Duration(seconds: 10));
+      await Future<void>.delayed(const Duration(milliseconds: 700));
+    }
+  }
+
   Future<void> _bekle(Future<void> Function() eylem,
       {Duration sure = const Duration(seconds: 15)}) async {
     final y = Completer<void>();
@@ -191,6 +263,34 @@ class _OsymEkraniState extends State<OsymEkrani> {
     }).toList();
     final gorulen = <String>{};
     var n = 0;
+    // Sonuç listesindeki "Görüntüle" düğmeleri: her satırı sırayla aç, oku, geri dön
+    final satirlar = (await _goruntuleler()).where((g) {
+      final k = KitapKatalog.kelimelereAyir(g.$1).join(' ');
+      return !k.contains('itiraz') && !k.contains('basvuru');
+    }).toList();
+    for (var j = 0; j < satirlar.length && n < 10 && mounted; j++) {
+      final g = satirlar[j];
+      n++;
+      final ad = g.$1.isEmpty ? 'Sonuç ${j + 1}' : g.$1;
+      setState(() => _durum = '"$ad" okunuyor ($n/${satirlar.length})');
+      try {
+        await _listeyeDon(ana);
+        await _c.runJavaScript(pencereJs);
+        // Liste yeniden yüklendiyse düğmenin sırası değişmiş olabilir; satır metniyle bul
+        final guncel = await _goruntuleler();
+        var sira = g.$2;
+        for (final x in guncel) {
+          if (x.$1 == g.$1) {
+            sira = x.$2;
+            break;
+          }
+        }
+        await _bekle(() => _c.runJavaScript(_siraylaTiklaJs(sira)), sure: const Duration(seconds: 10));
+        await Future<void>.delayed(const Duration(milliseconds: 1800));
+        await _oku(ad);
+      } catch (_) {}
+    }
+    if (satirlar.isNotEmpty) await _listeyeDon(ana);
     for (final l in linkler) {
       if (n >= 10 || !mounted) break;
       if (!gorulen.add('${l.$1}|${l.$2}')) continue;

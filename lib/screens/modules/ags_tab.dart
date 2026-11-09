@@ -5,6 +5,7 @@ import '../../models.dart';
 import '../../services/ags_icerik.dart';
 import '../../services/osym_db.dart';
 import '../../widgets/common.dart';
+import '../osym_screen.dart' show pencereJs;
 
 const _yesil = Color(0xFF2E7D32);
 const _kaynak = 'gunluk-deneme';
@@ -662,6 +663,7 @@ class _WebSayfaState extends State<WebSayfa> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (p) => setState(() => _ilerleme = p),
+        onPageFinished: (_) => _c.runJavaScript(pencereJs).catchError((_) {}),
       ))
       ..loadRequest(Uri.parse(widget.adres));
   }
