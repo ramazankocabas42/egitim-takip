@@ -1,0 +1,306 @@
+{
+ "tarih": "2026-11-09",
+ "ad": "Günlük AGS + PDR ÖABT denemesi",
+ "sorular": [
+  {
+   "id": "g20261109-01",
+   "ders": "sayisal",
+   "konu": "Problemler",
+   "soru": "3 kalem ve 2 defter 46 TL, 1 kalem ve 2 defter 30 TL'dir. Bir kalem kaç TL'dir?",
+   "secenekler": [
+    "10",
+    "9",
+    "8",
+    "7",
+    "6"
+   ],
+   "cevap": 2,
+   "aciklama": "İki denklem çıkarılırsa 2 kalem = 16 TL → kalem 8 TL."
+  },
+  {
+   "id": "g20261109-02",
+   "ders": "sayisal",
+   "konu": "Temel İşlemler",
+   "soru": "1'den 50'ye kadar (50 dahil) olan doğal sayılardan kaç tanesi 3'e tam bölünür?",
+   "secenekler": [
+    "14",
+    "18",
+    "16",
+    "17",
+    "15"
+   ],
+   "cevap": 2,
+   "aciklama": "50 / 3 = 16 tam kısım; 3, 6, ..., 48 → 16 sayı."
+  },
+  {
+   "id": "g20261109-03",
+   "ders": "sayisal",
+   "konu": "Problemler",
+   "soru": "Bir havuzu bir musluk 8 saatte dolduruyor, dipteki bir delik dolu havuzu 24 saatte boşaltıyor. Boş havuzda ikisi birlikte açık kalırsa havuz kaç saatte dolar?",
+   "secenekler": [
+    "16",
+    "32",
+    "12",
+    "9",
+    "10"
+   ],
+   "cevap": 2,
+   "aciklama": "1/8 - 1/24 = 2/24 = 1/12 → 12 saat."
+  },
+  {
+   "id": "g20261109-04",
+   "ders": "sozel",
+   "konu": "Sözcükte Anlam",
+   "soru": "\"Göz yummak\" deyiminin anlamı aşağıdakilerden hangisidir?",
+   "secenekler": [
+    "Birini kıskanmak",
+    "Çok dikkatli bakmak",
+    "Bir şeyi çok istemek",
+    "Bir yanlışı bilerek görmezden gelmek",
+    "Uyumaya hazırlanmak"
+   ],
+   "cevap": 3,
+   "aciklama": "Göz yummak; hoş görmek, bilerek ses çıkarmamak demektir."
+  },
+  {
+   "id": "g20261109-05",
+   "ders": "sozel",
+   "konu": "Sözel Mantık",
+   "soru": "A, B, C, D ve E pazartesiden cumaya kadar her gün biri olmak üzere nöbet tutacaktır. C çarşamba, E cuma günü nöbet tutar. A, B'den hemen sonraki gün nöbet tutar. Buna göre D hangi gün nöbet tutar?",
+   "secenekler": [
+    "Pazartesi",
+    "Çarşamba",
+    "Cuma",
+    "Perşembe",
+    "Salı"
+   ],
+   "cevap": 3,
+   "aciklama": "Boş günler pazartesi, salı, perşembe. B-A ardışık olmalı: B pazartesi, A salı; D perşembe."
+  },
+  {
+   "id": "g20261109-06",
+   "ders": "sozel",
+   "konu": "Paragrafta Anlam",
+   "soru": "\"Yeni bir beceri öğrenirken ilk haftalarda hızlı ilerleriz; sonra bir duraklama gelir ve çoğu kişi bu noktada bırakır. Oysa bu duraklama, beynin öğrendiklerini yerleştirdiği sessiz bir evredir. Sabredenler bir süre sonra yeniden sıçrama yaşar.\" Bu paragrafta asıl vurgulanan nedir?",
+   "secenekler": [
+    "Öğrenmedeki duraklamaların geçici olduğu ve sabırla aşılabileceği",
+    "Herkesin aynı hızda öğrendiği",
+    "Beynin dinlenmeye ihtiyacı olmadığı",
+    "Yeni becerilerin kısa sürede öğrenilemeyeceği",
+    "İlk haftalardaki ilerlemenin yanıltıcı olduğu"
+   ],
+   "cevap": 0,
+   "aciklama": "Metin duraklamanın bir yerleşme evresi olduğunu ve sabrın sonuç verdiğini anlatır."
+  },
+  {
+   "id": "g20261109-07",
+   "ders": "tarih",
+   "konu": "Tarih: İslamiyet Öncesi Türk Tarihi",
+   "soru": "İslamiyet öncesi Türklerde hükümdarlık yetkisinin Tanrı tarafından verildiğine inanılan anlayış hangisidir?",
+   "secenekler": [
+    "Töre",
+    "Kut",
+    "Ülüş",
+    "Balbal",
+    "Kurultay"
+   ],
+   "cevap": 1,
+   "aciklama": "Kut anlayışına göre yönetme yetkisi Tanrı'dan gelir."
+  },
+  {
+   "id": "g20261109-08",
+   "ders": "tarih",
+   "konu": "Tarih: Osmanlı Siyasi Tarihi",
+   "soru": "Tanzimat Fermanı hangi padişah döneminde ilan edilmiştir?",
+   "secenekler": [
+    "III. Selim",
+    "Abdülmecid",
+    "Abdülaziz",
+    "II. Abdülhamid",
+    "II. Mahmud"
+   ],
+   "cevap": 1,
+   "aciklama": "Tanzimat Fermanı 1839'da Abdülmecid döneminde Mustafa Reşit Paşa tarafından okunmuştur."
+  },
+  {
+   "id": "g20261109-09",
+   "ders": "cografya",
+   "konu": "Coğrafya: Bölgesel Coğrafya",
+   "soru": "Türkiye'de heyelan olaylarının en sık görüldüğü bölge hangisidir?",
+   "secenekler": [
+    "İç Anadolu",
+    "Ege",
+    "Karadeniz",
+    "Güneydoğu Anadolu",
+    "Marmara"
+   ],
+   "cevap": 2,
+   "aciklama": "Eğimli yamaçlar ve bol yağış Karadeniz'de heyelanı artırır."
+  },
+  {
+   "id": "g20261109-10",
+   "ders": "cografya",
+   "konu": "Coğrafya: Bölgesel Coğrafya",
+   "soru": "Tuz Gölü hangi coğrafi bölgede yer alır?",
+   "secenekler": [
+    "İç Anadolu",
+    "Doğu Anadolu",
+    "Akdeniz",
+    "Ege",
+    "Marmara"
+   ],
+   "cevap": 0,
+   "aciklama": "Tuz Gölü İç Anadolu'da, Ankara-Konya-Aksaray arasındadır."
+  },
+  {
+   "id": "g20261109-11",
+   "ders": "egitim",
+   "konu": "Gelişim Psikolojisi",
+   "soru": "Piaget'ye göre nesne sürekliliği (nesnenin gözden kaybolsa da var olmaya devam ettiğini bilme) hangi dönemde kazanılır?",
+   "secenekler": [
+    "Somut işlemler",
+    "Duyusal-motor",
+    "İşlem öncesi",
+    "Ergenlik",
+    "Soyut işlemler"
+   ],
+   "cevap": 1,
+   "aciklama": "Nesne sürekliliği 0-2 yaş duyusal-motor dönemde kazanılır."
+  },
+  {
+   "id": "g20261109-12",
+   "ders": "egitim",
+   "konu": "Öğrenme Psikolojisi",
+   "soru": "Maslow'un ihtiyaçlar hiyerarşisinde en alt basamakta yer alan ihtiyaçlar hangileridir?",
+   "secenekler": [
+    "Ait olma ihtiyacı",
+    "Fizyolojik ihtiyaçlar",
+    "Kendini gerçekleştirme",
+    "Saygı ihtiyacı",
+    "Güvenlik ihtiyacı"
+   ],
+   "cevap": 1,
+   "aciklama": "Açlık, susuzluk, uyku gibi fizyolojik ihtiyaçlar hiyerarşinin temelidir."
+  },
+  {
+   "id": "g20261109-13",
+   "ders": "egitim",
+   "konu": "Ölçme ve Değerlendirme",
+   "soru": "Bir testin aynı gruba farklı zamanlarda uygulandığında benzer sonuçlar vermesi testin hangi özelliğini gösterir?",
+   "secenekler": [
+    "Güçlük",
+    "Geçerlik",
+    "Ayırt edicilik",
+    "Kullanışlılık",
+    "Güvenirlik"
+   ],
+   "cevap": 4,
+   "aciklama": "Tutarlılık güvenirliğin göstergesidir (test-tekrar test)."
+  },
+  {
+   "id": "g20261109-14",
+   "ders": "egitim",
+   "konu": "Öğrenme Psikolojisi",
+   "soru": "Hareket ederek, dans ederek ve elleriyle yaparak daha iyi öğrenen bir öğrenci Gardner'a göre hangi zekâ alanında güçlüdür?",
+   "secenekler": [
+    "Sözel-dilsel",
+    "Bedensel-kinestetik",
+    "İçsel",
+    "Mantıksal-matematiksel",
+    "Doğacı"
+   ],
+   "cevap": 1,
+   "aciklama": "Bedeni etkili kullanma bedensel-kinestetik zekânın özelliğidir."
+  },
+  {
+   "id": "g20261109-15",
+   "ders": "egitim",
+   "konu": "Öğretim Yöntem ve Teknikleri",
+   "soru": "Öğrencilerin örnekleri inceleyerek kendi başlarına genellemeye ve kurala ulaştıkları, özelden genele ilerleyen öğretim stratejisi hangisidir?",
+   "secenekler": [
+    "Düz anlatım",
+    "Buluş yoluyla öğretim",
+    "Tam öğrenme",
+    "Sunuş yoluyla öğretim",
+    "Programlı öğretim"
+   ],
+   "cevap": 1,
+   "aciklama": "Bruner'in buluş yoluyla öğretimi tümevarımsaldır."
+  },
+  {
+   "id": "g20261109-16",
+   "ders": "mevzuat",
+   "konu": "1739 Sayılı Milli Eğitim Temel Kanunu",
+   "soru": "\"Eğitim, bireylerin hayatları boyunca devam eder.\" anlayışı 1739 sayılı Kanun'daki hangi ilkeyle ilgilidir?",
+   "secenekler": [
+    "Genellik ve eşitlik",
+    "Bilimsellik",
+    "Süreklilik",
+    "Planlılık",
+    "Yöneltme"
+   ],
+   "cevap": 2,
+   "aciklama": "Süreklilik ilkesi eğitimin hayat boyu sürmesini öngörür."
+  },
+  {
+   "id": "g20261109-17",
+   "ders": "mevzuat",
+   "konu": "Anayasa'da Eğitim",
+   "soru": "Anayasa'nın 42. maddesine göre aşağıdakilerden hangisi doğrudur?",
+   "secenekler": [
+    "Kimse eğitim ve öğrenim hakkından yoksun bırakılamaz.",
+    "Eğitim Devletin denetimi dışındadır.",
+    "Ortaöğretim tüm vatandaşlar için paralıdır.",
+    "Eğitim yalnızca özel okullarda yapılır.",
+    "Ana dil öğretimi her dilde serbesttir."
+   ],
+   "cevap": 0,
+   "aciklama": "42. madde eğitim hakkını herkes için güvence altına alır."
+  },
+  {
+   "id": "g20261109-18",
+   "ders": "pdr",
+   "konu": "Psikolojik Danışma Kuramları",
+   "soru": "Anlam arayışını, özgürlük ve sorumluluğu temel alan ve logoterapiyi geliştiren kuramcı kimdir?",
+   "secenekler": [
+    "Albert Ellis",
+    "Carl Rogers",
+    "Aaron Beck",
+    "Viktor Frankl",
+    "Eric Berne"
+   ],
+   "cevap": 3,
+   "aciklama": "Logoterapi Viktor Frankl'ın varoluşçu yaklaşımıdır."
+  },
+  {
+   "id": "g20261109-19",
+   "ders": "pdr",
+   "konu": "Mesleki Rehberlik ve Kariyer Kuramları",
+   "soru": "Holland'ın kişilik tiplerinden hangisi düzenli, kurallı ve veriyle çalışmayı tercih eden bireyleri tanımlar?",
+   "secenekler": [
+    "Artistik",
+    "Gerçekçi",
+    "Geleneksel",
+    "Sosyal",
+    "Araştırmacı"
+   ],
+   "cevap": 2,
+   "aciklama": "Geleneksel tip; büro, muhasebe gibi düzenli işleri sever."
+  },
+  {
+   "id": "g20261109-20",
+   "ders": "pdr",
+   "konu": "Bireyi Tanıma Teknikleri",
+   "soru": "Öğrencinin kendi yaşamını, duygularını ve önemli yaşantılarını yazılı olarak anlattığı test dışı teknik hangisidir?",
+   "secenekler": [
+    "Kimdir Bu?",
+    "Anket",
+    "Sosyometri",
+    "Otobiyografi",
+    "Gözlem"
+   ],
+   "cevap": 3,
+   "aciklama": "Otobiyografi bireyin kendi yaşam öyküsünü yazmasıdır."
+  }
+ ]
+}

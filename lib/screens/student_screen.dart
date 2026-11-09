@@ -11,6 +11,7 @@ import 'modules/homework_tab.dart';
 import 'modules/lgs_tab.dart';
 import 'modules/okul_tab.dart';
 import 'modules/oneriler_tab.dart';
+import 'modules/ags_tab.dart';
 import 'modules/osym_tab.dart';
 import 'modules/overview_tab.dart';
 import 'modules/plan_tab.dart';
@@ -84,6 +85,8 @@ class _StudentScreenState extends State<StudentScreen> {
           if (osym)
             (const Tab(icon: Icon(Icons.workspace_premium_outlined), text: 'ÖSYM Sınavları'),
                 OsymTab(student: s, me: me, varsayilanGrup: const ['YKS', 'KPSS', 'AGS'].contains(hedef) ? hedef : null)),
+          if (hedef == 'AGS' && acik('ags'))
+            (const Tab(icon: Icon(Icons.local_fire_department_outlined), text: 'AGS Hazırlık'), AgsTab(student: s, me: me)),
           if (lgs)
             (const Tab(icon: Icon(Icons.flag_outlined), text: 'LGS Deneme'), LgsTab(student: s, me: me)),
           if (acik('odevler'))

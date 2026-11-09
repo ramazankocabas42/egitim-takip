@@ -1,0 +1,1413 @@
+{
+ "surum": 1,
+ "dersler": [
+  {
+   "id": "sozel",
+   "test": "sozel",
+   "sinav": "AGS",
+   "ad": "Sözel Yetenek",
+   "konular": [
+    {
+     "ad": "Sözcükte Anlam",
+     "ozet": "Bir sözcüğün gerçek (temel) anlamı, ilk akla gelen anlamıdır. Yan anlam temel anlamla ilgili yeni bir anlamdır (masanın ayağı). Mecaz anlam ise sözcüğün gerçek anlamından tamamen uzaklaşmasıdır (ağır söz = kırıcı söz). Deyimler çoğunlukla mecazlıdır ve kalıplaşmıştır; sözcükleri değiştirilemez. Sorularda sözcüğü cümleden çıkarıp yerine seçeneği koyarak anlamın bozulup bozulmadığına bakın."
+    },
+    {
+     "ad": "Cümlede Anlam",
+     "ozet": "Neden-sonuç (-dığı için, -den), amaç-sonuç (için, üzere, diye), koşul (-se, -diği takdirde), karşılaştırma (daha, en, gibi) ilişkileri sık sorulur. Amaç-sonuçta eylem henüz gerçekleşmemiş bir hedefe yöneliktir; neden-sonuçta ise gerçekleşmiş bir sebep vardır. Öznel yargı kişiden kişiye değişir, nesnel yargı kanıtlanabilir."
+    },
+    {
+     "ad": "Anlatımın Oluşması",
+     "ozet": "Anlatım biçimleri: açıklama (bilgi verme), tartışma (karşı görüşü çürütme), betimleme (duyularla resim çizme), öyküleme (olay ve zaman akışı). Anlatım bozuklukları; gereksiz sözcük (yaklaşık ... kadar), anlamca çelişen sözcükler (kesinlikle ... olabilir), özne-yüklem uyumsuzluğu ve ek eksikliğinden doğar."
+    },
+    {
+     "ad": "Paragrafta Anlam",
+     "ozet": "Ana düşünce, yazarın okura asıl vermek istediği mesajdır ve genellikle giriş ya da sonuç cümlesindedir. Yardımcı düşünceler ana düşünceyi destekler. 'Değinilmemiştir' sorularında her seçeneği metinde arayın; yorumla değil metinle karar verin. Paragrafı ikiye bölme ve akışı bozan cümle sorularında konu değişikliğine dikkat edin."
+    },
+    {
+     "ad": "Sözel Mantık",
+     "ozet": "Bilgileri önce tabloya ya da sıraya dökün. Kesin bilgileri (Cem 3. katta) yerleştirip ardından koşullu bilgileri deneyin. 'Kesinlikle doğrudur' sorularında tüm olası durumlarda doğru olanı, 'olabilir' sorularında en az bir durumda doğru olanı seçin. Tüm/bazı önermelerinde 'bazı A B'dir' ifadesi tersinin de doğru olduğunu gösterir; 'tüm A B'dir' göstermez."
+    }
+   ]
+  },
+  {
+   "id": "sayisal",
+   "test": "sayisal",
+   "sinav": "AGS",
+   "ad": "Sayısal Yetenek",
+   "konular": [
+    {
+     "ad": "Temel İşlemler",
+     "ozet": "Bölünebilme kuralları (3: rakamlar toplamı 3'ün katı, 4: son iki basamak 4'ün katı), EBOB-EKOK, rasyonel sayılar ve üslü sayılar temel konulardır. Eşit ve en büyük parçalara ayırma EBOB, birlikte tekrar eden olaylar EKOK ile çözülür."
+    },
+    {
+     "ad": "Problemler",
+     "ozet": "Yaş: kişiler arasındaki yaş farkı hiç değişmez. İşçi: birim zamanda yapılan iş 1/süre'dir, birlikte çalışmada bunlar toplanır. Hareket: yol = hız × zaman; karşılıklı harekette hızlar toplanır, aynı yönde çıkarılır. Yüzde: %x artış sonra %x azalış ilk değerden daha küçük bir sonuç verir."
+    },
+    {
+     "ad": "Sayısal Mantık",
+     "ozet": "Sayı dizilerinde ardışık farklara, sonra farkların farkına bakın. Şekil ve tablo sorularında satır/sütun kuralını iki örnekte deneyip üçüncüde doğrulayın."
+    },
+    {
+     "ad": "Veri Yorumlama",
+     "ozet": "Tablo ve grafiklerde önce birimi (bin, %, kişi) okuyun. Ortalama = toplam / adet. Oran ve artış yüzdesi sorulurken (yeni - eski) / eski × 100 hesaplanır."
+    },
+    {
+     "ad": "Geometri",
+     "ozet": "Dikdörtgen: çevre 2(a+b), alan a·b. Üçgende iç açılar toplamı 180°. Dik üçgende Pisagor: a² + b² = c². Çember çevresi 2πr, daire alanı πr²."
+    }
+   ]
+  },
+  {
+   "id": "tarih",
+   "test": "tarih",
+   "sinav": "AGS",
+   "ad": "Tarih",
+   "konular": [
+    {
+     "ad": "Tarih: İslamiyet Öncesi Türk Tarihi",
+     "ozet": "Asya Hun, Göktürk ve Uygur devletleri öne çıkar. Kut anlayışına göre yönetme yetkisi hükümdara Tanrı tarafından verilir. Orhun (Göktürk) Yazıtları Türk adının geçtiği ilk Türkçe yazılı belgelerdendir. Uygurlar yerleşik hayata geçen ilk Türk topluluklarındandır."
+    },
+    {
+     "ad": "Tarih: Türk-İslam Devletleri",
+     "ozet": "Büyük Selçuklu Sultanı Alparslan 1071 Malazgirt Savaşı'nda Bizans'ı yenerek Anadolu'nun kapılarını Türklere açtı. Karahanlılar ilk Müslüman Türk devletlerindendir; Kutadgu Bilig ve Divanü Lügati't-Türk bu dönemin eserleridir."
+    },
+    {
+     "ad": "Tarih: Osmanlı Siyasi Tarihi",
+     "ozet": "Kuruluş (1299-1453), Yükselme (1453-1579), Duraklama, Gerileme ve Dağılma dönemleri. II. Mehmed 1453'te İstanbul'u fethetti. Kanuni dönemi en geniş sınırlara yaklaşılan dönemdir. 1839 Tanzimat Fermanı Abdülmecid döneminde ilan edildi."
+    },
+    {
+     "ad": "Tarih: Osmanlı Kültür ve Medeniyeti",
+     "ozet": "Divan-ı Hümayun devlet işlerinin görüşüldüğü en yüksek kuruldur. Tımar sistemi asker yetiştirme ve toprak yönetimini birleştirir. Devşirme sistemiyle Yeniçeri Ocağı'na asker alınırdı."
+    },
+    {
+     "ad": "Tarih: Kurtuluş Savaşı Hazırlık",
+     "ozet": "Amasya Genelgesi (Haziran 1919), Erzurum ve Sivas kongreleri hazırlık dönemidir. Misak-ı Milli, Ocak 1920'de son Osmanlı Mebusan Meclisi'nde kabul edildi. TBMM 23 Nisan 1920'de açıldı."
+    },
+    {
+     "ad": "Tarih: Kurtuluş Savaşı",
+     "ozet": "Doğu cephesinde Ermenilerle imzalanan Gümrü Antlaşması TBMM'nin uluslararası alandaki ilk antlaşmasıdır. Sakarya Meydan Muharebesi'nden sonra Mustafa Kemal'e Mareşal rütbesi ve Gazi unvanı verildi. Büyük Taarruz'un ardından Mudanya Ateşkesi, 1923'te Lozan Barış Antlaşması imzalandı; Musul sorunu Lozan'da çözülemedi."
+    },
+    {
+     "ad": "Tarih: Atatürk İlke ve İnkılapları",
+     "ozet": "Saltanat 1 Kasım 1922'de kaldırıldı, Cumhuriyet 29 Ekim 1923'te ilan edildi, halifelik 1924'te kaldırıldı. Tevhid-i Tedrisat Kanunu (1924) eğitimi birleştirdi. Harf İnkılabı 1928, Soyadı Kanunu 1934'te kabul edildi."
+    },
+    {
+     "ad": "Tarih: Atatürk Dönemi Dış Politika",
+     "ozet": "Lozan'dan kalan sorunlar (Musul, Boğazlar, nüfus mübadelesi) bu dönemde çözülmeye çalışıldı. 1936 Montrö Sözleşmesi ile Boğazlar üzerinde tam egemenlik sağlandı. Hatay 1939'da anavatana katıldı."
+    },
+    {
+     "ad": "Tarih: Çağdaş Türk ve Dünya Tarihi",
+     "ozet": "Türkiye II. Dünya Savaşı'na fiilen girmedi; 1952'de NATO'ya üye oldu. Soğuk Savaş döneminde Batı bloku içinde yer aldı."
+    }
+   ]
+  },
+  {
+   "id": "cografya",
+   "test": "cografya",
+   "sinav": "AGS",
+   "ad": "Türkiye Coğrafyası",
+   "konular": [
+    {
+     "ad": "Coğrafya: Coğrafi Konum",
+     "ozet": "Türkiye 36°-42° kuzey paralelleri ile 26°-45° doğu meridyenleri arasındadır. 19 meridyen farkı en doğu ile en batı arasında 76 dakikalık yerel saat farkı oluşturur (her meridyen 4 dakika)."
+    },
+    {
+     "ad": "Coğrafya: Yer Şekilleri",
+     "ozet": "Türkiye ortalama yükseltisi fazla, engebeli bir ülkedir. En yüksek dağ Ağrı Dağı'dır. Kalkerli arazinin yaygın olduğu Toroslarda karstik şekiller (obruk, polye, mağara) görülür. Kapadokya'daki peri bacaları volkanik tüflerin aşınmasıyla oluşmuştur."
+    },
+    {
+     "ad": "Coğrafya: İklim ve Bitki Örtüsü",
+     "ozet": "Karadeniz iklimi her mevsim yağışlıdır, doğal bitki örtüsü ormandır. Akdeniz ikliminde yazlar sıcak-kurak, kışlar ılık-yağışlıdır; bitki örtüsü makidir. Karasal iklimde yaz-kış sıcaklık farkı fazladır, bitki örtüsü bozkırdır."
+    },
+    {
+     "ad": "Coğrafya: Nüfus ve Yerleşme",
+     "ozet": "Nüfus kıyılarda ve sanayi merkezlerinde yoğundur. Nüfus yoğunluğunun en az olduğu bölge yer şekilleri ve iklim koşulları nedeniyle Doğu Anadolu'dur."
+    },
+    {
+     "ad": "Coğrafya: Tarım ve Hayvancılık",
+     "ozet": "Çay ve fındık Karadeniz'de, özellikle çay Doğu Karadeniz'de (Rize) yetiştirilir. Pamuk Çukurova ve Güneydoğu'da, zeytin Ege ve Akdeniz kıyılarında yaygındır."
+    },
+    {
+     "ad": "Coğrafya: Madenler ve Enerji",
+     "ozet": "Dünya bor rezervlerinin büyük kısmı Türkiye'dedir (Eskişehir, Balıkesir, Kütahya, Bursa). Hidroelektrik potansiyeli yüksek akarsuların başında Fırat gelir; Atatürk Barajı Türkiye'nin en büyük barajlarındandır."
+    },
+    {
+     "ad": "Coğrafya: Bölgesel Coğrafya",
+     "ozet": "GAP, Fırat ve Dicle havzalarında sulama ve enerji üretimini amaçlayan çok yönlü bir kalkınma projesidir. Tuz Gölü İç Anadolu'dadır. Heyelan en çok eğimli ve yağışlı Karadeniz Bölgesi'nde görülür."
+    }
+   ]
+  },
+  {
+   "id": "egitim",
+   "test": "egitim",
+   "sinav": "AGS",
+   "ad": "Eğitim Bilimleri",
+   "konular": [
+    {
+     "ad": "Gelişim Psikolojisi",
+     "ozet": "Piaget: duyusal-motor (0-2, nesne sürekliliği), işlem öncesi (2-7, ben merkezcilik), somut işlemler (7-11, korunum), soyut işlemler (11+). Vygotsky: yakınsak (yakın) gelişim alanı ve iskele kurma. Erikson: ergenlikte kimlik kazanmaya karşı rol karmaşası. Kohlberg ahlak gelişimini gelenek öncesi, geleneksel ve gelenek sonrası düzeylerle açıklar."
+    },
+    {
+     "ad": "Öğrenme Psikolojisi",
+     "ozet": "Klasik koşullanma (Pavlov): koşulsuz-koşullu uyarıcı, genelleme, ayırt etme. Edimsel koşullanma (Skinner): olumlu pekiştirme (hoşa giden eklenir), olumsuz pekiştirme (hoşa gitmeyen kaldırılır), ceza davranışı azaltır. Bandura: model alma, dolaylı pekiştirme. Maslow ihtiyaçlar hiyerarşisinde temel basamak fizyolojik ihtiyaçlardır. Gardner çoklu zekâ kuramını ortaya koymuştur."
+    },
+    {
+     "ad": "Öğretim Yöntem ve Teknikleri",
+     "ozet": "Sunuş yoluyla öğretim (Ausubel): ön örgütleyici, genelden özele. Buluş yoluyla öğretim (Bruner): örneklerden kurala, özelden genele. Araştırma-inceleme: bilimsel süreç becerileri. Bloom bilişsel basamakları: hatırlama, anlama, uygulama, çözümleme, değerlendirme, yaratma."
+    },
+    {
+     "ad": "Ölçme ve Değerlendirme",
+     "ozet": "Geçerlik: testin ölçmek istediğini ölçmesi. Güvenirlik: tekrarlanan ölçümlerde tutarlı sonuç vermesi. Ölçek türleri: sınıflama (numara), sıralama (derece), eşit aralıklı (°C, keyfi sıfır), oranlı (boy, kütle; gerçek sıfır)."
+    },
+    {
+     "ad": "Sınıf Yönetimi",
+     "ozet": "Kounin: her şeyden haberdar olma, aynı anda birden çok işle ilgilenme, derste akıcılık. Canter: kararlı (atılgan) disiplin. Önleyici sınıf yönetimi, kuralların başta öğrencilerle birlikte belirlenmesini öne çıkarır."
+    },
+    {
+     "ad": "Rehberlik",
+     "ozet": "Rehberlik tüm öğrencilere yönelik, gönüllülük ve gizlilik esaslı, gelişimsel ve süreklilik gösteren bir hizmettir. Yalnızca sorunlu öğrencilere yönelik değildir."
+    },
+    {
+     "ad": "Öğretim Teknolojileri",
+     "ozet": "Dale'in yaşantı konisinde en somut basamak doğrudan amaçlı yaşantılar, en soyut basamak sözel sembollerdir. Materyal seçerken hedef, öğrenci özellikleri ve ortam dikkate alınır."
+    },
+    {
+     "ad": "Program Okuryazarlığı",
+     "ozet": "Eğitim programının dört öğesi: hedef (kazanım), içerik, eğitim durumları (öğrenme-öğretme süreci) ve değerlendirme. Öğeler birbirini etkileyen dinamik bir bütündür."
+    },
+    {
+     "ad": "Türk Milli Eğitim Sisteminin Yapısı",
+     "ozet": "2012'den beri zorunlu eğitim 12 yıldır ve kademeli (4+4+4) yapıdadır. Milli eğitim sistemi örgün ve yaygın eğitim olmak üzere iki ana bölümden oluşur."
+    },
+    {
+     "ad": "Türkiye Yüzyılı Maarif Modeli",
+     "ozet": "2024'te uygulanmaya başlanan model; erdem-değer-eylem çerçevesi, beceriler çerçevesi (kavramsal, alan becerileri, sosyal-duygusal öğrenme becerileri, okuryazarlık becerileri) ve eğilimler ile bütüncül bir öğrenci profili hedefler."
+    }
+   ]
+  },
+  {
+   "id": "mevzuat",
+   "test": "mevzuat",
+   "sinav": "AGS",
+   "ad": "Mevzuat",
+   "konular": [
+    {
+     "ad": "Anayasa'da Eğitim",
+     "ozet": "Anayasa'nın 42. maddesi: Kimse eğitim ve öğrenim hakkından yoksun bırakılamaz. İlköğretim kız ve erkek bütün vatandaşlar için zorunludur ve Devlet okullarında parasızdır. Eğitim ve öğretim Atatürk ilke ve inkılapları doğrultusunda, Devletin gözetim ve denetimi altında yapılır. Türkçeden başka hiçbir dil Türk vatandaşlarına ana dilleri olarak okutulamaz."
+    },
+    {
+     "ad": "1739 Sayılı Milli Eğitim Temel Kanunu",
+     "ozet": "Temel ilkeler: genellik ve eşitlik, ferdin ve toplumun ihtiyaçları, yöneltme, eğitim hakkı, fırsat ve imkân eşitliği, süreklilik, Atatürk inkılap ve ilkeleri, demokrasi eğitimi, laiklik, bilimsellik, planlılık, karma eğitim, okul ile ailenin iş birliği, her yerde eğitim. Sistem örgün ve yaygın eğitimden oluşur."
+    },
+    {
+     "ad": "222 Sayılı İlköğretim Kanunu",
+     "ozet": "222 sayılı İlköğretim ve Eğitim Kanunu ilköğretimin yürütülmesi, zorunluluğu ve velilerin yükümlülüklerine ilişkin temel düzenlemedir."
+    },
+    {
+     "ad": "7528 Sayılı Öğretmenlik Meslek Kanunu",
+     "ozet": "Öğretmenliğe giriş, Milli Eğitim Akademisi'ndeki hazırlık eğitimi, adaylık ve kariyer basamaklarını (öğretmen, uzman öğretmen, başöğretmen) düzenler. AGS sonuçları akademiye kabulde kullanılır."
+    }
+   ]
+  },
+  {
+   "id": "pdr",
+   "test": "alan",
+   "sinav": "OABT",
+   "ad": "PDR ÖABT",
+   "konular": [
+    {
+     "ad": "Psikolojik Danışma Kuramları",
+     "ozet": "Psikanalitik (Freud): bilinçdışı, savunma mekanizmaları. Bireysel psikoloji (Adler): aşağılık duygusu, yaşam stili, doğum sırası. Danışan merkezli (Rogers): koşulsuz kabul, empati, içtenlik. AABT (Ellis): ABC modeli, akıldışı inançlar. Gerçeklik terapisi (Glasser): seçim kuramı, sorumluluk. Varoluşçu (Frankl, Yalom): anlam arayışı. Gestalt (Perls): şimdi ve burada. Transaksiyonel analiz (Berne): ebeveyn-yetişkin-çocuk ego durumları."
+    },
+    {
+     "ad": "Mesleki Rehberlik ve Kariyer Kuramları",
+     "ozet": "Holland kişilik tipleri: gerçekçi, araştırmacı, artistik, sosyal, girişimci, geleneksel. Super: benlik kavramı ve yaşam boyu kariyer gelişimi. Ginzberg: hayal, geçici, gerçekçi dönemler. Roe: erken çocukluk ve ana-baba tutumları. Gottfredson: sınırlama ve uzlaşma."
+    },
+    {
+     "ad": "Bireyi Tanıma Teknikleri",
+     "ozet": "Test teknikleri: zekâ, yetenek, kişilik testleri (MMPI), projektif testler (Rorschach, TAT). Test dışı teknikler: gözlem, anekdot, sosyometri (grup içi ilişkiler), kimdir bu?, otobiyografi, görüşme."
+    },
+    {
+     "ad": "Grupla Psikolojik Danışma",
+     "ozet": "Yalom'un terapötik etkenleri: umut aşılama, evrensellik, bilgi paylaşma, özgecilik, grup bağlılığı, katarsis vb. Grup süreci başlangıç, geçiş, çalışma ve sonlandırma aşamalarından oluşur."
+    },
+    {
+     "ad": "Mesleki Etik",
+     "ozet": "Gizlilik temel ilkedir; danışanın ya da başkalarının yaşamını tehdit eden ciddi bir tehlike durumunda sınırlanabilir. Bilgilendirilmiş onam, çift ilişkiden kaçınma ve yetkinlik sınırları içinde çalışma etik ilkelerdendir."
+    }
+   ]
+  }
+ ],
+ "sorular": [
+  {
+   "id": "s01",
+   "ders": "sozel",
+   "konu": "Sözcükte Anlam",
+   "soru": "\"Toplantıda söylediği sözler, ortamdaki gerginliği yumuşattı.\" cümlesinde \"yumuşatmak\" sözcüğü hangi anlamda kullanılmıştır?",
+   "secenekler": [
+    "Sertliğini fiziksel olarak gidermek",
+    "Etkisini azaltmak, hafifletmek",
+    "Başkasına aktarmak",
+    "Tamamen ortadan kaldırmak",
+    "Daha da artırmak"
+   ],
+   "cevap": 1,
+   "aciklama": "Gerginlik soyut bir durumdur; yumuşatmak burada mecaz olarak 'hafifletmek' anlamındadır."
+  },
+  {
+   "id": "s02",
+   "ders": "sozel",
+   "konu": "Sözcükte Anlam",
+   "soru": "\"Ağzı kulaklarına varmak\" deyiminin anlamı aşağıdakilerden hangisidir?",
+   "secenekler": [
+    "Sır saklayamamak",
+    "Çok konuşmak",
+    "Çok acıkmak",
+    "Şaşkınlıktan donup kalmak",
+    "Çok sevinmek"
+   ],
+   "cevap": 4,
+   "aciklama": "Deyim, sevinçten geniş geniş gülmeyi anlatır."
+  },
+  {
+   "id": "s03",
+   "ders": "sozel",
+   "konu": "Sözcükte Anlam",
+   "soru": "Aşağıdaki cümlelerin hangisinde \"ağır\" sözcüğü mecaz anlamda kullanılmıştır?",
+   "secenekler": [
+    "Bu demir çubuk sandığımdan ağır.",
+    "Kamyon ağır olduğu için köprüden geçemedi.",
+    "Ağır yükleri asansörle çıkardılar.",
+    "Bavul taşıyamayacağım kadar ağırdı.",
+    "Bu sözler ona çok ağır geldi."
+   ],
+   "cevap": 4,
+   "aciklama": "Diğer seçeneklerde fiziksel ağırlık; doğru seçenekte 'kırıcı, incitici' anlamı vardır."
+  },
+  {
+   "id": "s04",
+   "ders": "sozel",
+   "konu": "Cümlede Anlam",
+   "soru": "Aşağıdaki cümlelerin hangisinde amaç-sonuç ilişkisi vardır?",
+   "secenekler": [
+    "Hava soğuk olduğu için kalın giyindi.",
+    "Yorulduğundan erkenden uyudu.",
+    "Sınava hazırlanmak için kütüphaneye gitti.",
+    "Erken çıkarsan otobüse yetişirsin.",
+    "Bu yıl geçen yıldan daha çok kitap okudu."
+   ],
+   "cevap": 2,
+   "aciklama": "Kütüphaneye gitmenin amacı hazırlanmaktır; diğerleri neden-sonuç, koşul ve karşılaştırma bildirir."
+  },
+  {
+   "id": "s05",
+   "ders": "sozel",
+   "konu": "Anlatımın Oluşması",
+   "soru": "Aşağıdaki cümlelerin hangisinde gereksiz sözcük kullanımından kaynaklanan bir anlatım bozukluğu vardır?",
+   "secenekler": [
+    "Toplantıya yaklaşık on kişi katıldı.",
+    "Toplantıya yaklaşık on kişi kadar katıldı.",
+    "Toplantıya on kişi kadar katıldı.",
+    "Toplantıya on kişi katıldı.",
+    "Toplantıya ancak on kişi katılabildi."
+   ],
+   "cevap": 1,
+   "aciklama": "'Yaklaşık' ve 'kadar' aynı anlamı taşır; birlikte kullanılınca biri gereksizdir."
+  },
+  {
+   "id": "s06",
+   "ders": "sozel",
+   "konu": "Anlatımın Oluşması",
+   "soru": "\"Kasabanın girişindeki çınarın gölgesi, öğle sıcağında taş yolu serinletiyor; yaprakların hışırtısına uzaktan bir su sesi karışıyordu.\" Bu cümlede ağırlıklı olarak hangi anlatım biçimi kullanılmıştır?",
+   "secenekler": [
+    "Tartışma",
+    "Öyküleme",
+    "Açıklama",
+    "Karşılaştırma",
+    "Betimleme"
+   ],
+   "cevap": 4,
+   "aciklama": "Görme ve işitme duyularına seslenerek bir yerin resmi çizilmiştir."
+  },
+  {
+   "id": "s07",
+   "ders": "sozel",
+   "konu": "Paragrafta Anlam",
+   "soru": "\"Kitap okumayı yalnızca boş zaman etkinliği olarak görenler, onun düşünme biçimimizi nasıl değiştirdiğini gözden kaçırır. İyi bir metin bizi başkalarının yerine koyar, alışık olmadığımız sorular sordurur. Bu yüzden okuma, dinlenmekten çok bir zihinsel antrenmandır.\" Bu paragrafta asıl anlatılmak istenen nedir?",
+   "secenekler": [
+    "Boş zamanların mutlaka kitapla geçirilmesi gerektiği",
+    "İyi metinlerin az bulunduğu",
+    "Okurların yazarlarla aynı fikirde olması gerektiği",
+    "Okumanın düşünme becerisini geliştiren bir uğraş olduğu",
+    "Dinlenmenin zihinsel gelişim için zararlı olduğu"
+   ],
+   "cevap": 3,
+   "aciklama": "Son cümle ana düşünceyi verir: okuma zihinsel bir antrenmandır."
+  },
+  {
+   "id": "s08",
+   "ders": "sozel",
+   "konu": "Paragrafta Anlam",
+   "soru": "\"Şehir bahçeleri son yıllarda yalnızca sebze yetiştirilen yerler olmaktan çıktı. Komşuların tanıştığı, çocukların toprağa dokunduğu, yaşlıların bilgi aktardığı ortak alanlara dönüştü.\" Bu paragrafta şehir bahçeleriyle ilgili aşağıdakilerden hangisine değinilmemiştir?",
+   "secenekler": [
+    "Komşuluk ilişkilerini güçlendirdiğine",
+    "Kuşaklar arası bilgi aktarımına",
+    "Çocukların doğayla temas kurmasına",
+    "Eskiden daha çok sebze yetiştirmek için kullanıldığına",
+    "Ekonomik kazanç sağladığına"
+   ],
+   "cevap": 4,
+   "aciklama": "Metinde gelir ya da kazançtan söz edilmemiştir."
+  },
+  {
+   "id": "s09",
+   "ders": "sozel",
+   "konu": "Sözel Mantık",
+   "soru": "Ayla, Berk, Cem, Deniz ve Ece beş katlı bir rafın (1. kat en alt) farklı katlarına birer kitap koyuyor. Cem 3. kata koymuştur. Ece en üst kata koymuştur. Deniz, Cem'in üstündeki bir kata koymuştur. Ayla, Berk'in hemen üstündeki kata koymuştur. Buna göre Ayla kitabını kaçıncı kata koymuştur?",
+   "secenekler": [
+    "4",
+    "5",
+    "1",
+    "2",
+    "3"
+   ],
+   "cevap": 3,
+   "aciklama": "Ece 5, Cem 3 ise Deniz 4 olur. Kalan 1 ve 2'de Ayla Berk'in hemen üstünde olduğundan Berk 1, Ayla 2."
+  },
+  {
+   "id": "s10",
+   "ders": "sozel",
+   "konu": "Sözel Mantık",
+   "soru": "\"Tüm öğretmenler kitap okur. Bazı kitap okuyanlar yazardır.\" Bu bilgilere göre aşağıdakilerden hangisi kesinlikle doğrudur?",
+   "secenekler": [
+    "Bazı öğretmenler yazardır.",
+    "Hiçbir yazar öğretmen değildir.",
+    "Kitap okumayan hiçbir öğretmen yoktur.",
+    "Kitap okuyan herkes öğretmendir.",
+    "Tüm yazarlar öğretmendir."
+   ],
+   "cevap": 2,
+   "aciklama": "İlk önermeden doğrudan çıkan tek kesin sonuç, öğretmen olup kitap okumayan kimsenin olmamasıdır; yazarlarla ilgili kesin bir bağ kurulamaz."
+  },
+  {
+   "id": "n01",
+   "ders": "sayisal",
+   "konu": "Temel İşlemler",
+   "soru": "Bir sayının %20'si 36 ise bu sayının %35'i kaçtır?",
+   "secenekler": [
+    "66",
+    "72",
+    "58",
+    "54",
+    "63"
+   ],
+   "cevap": 4,
+   "aciklama": "Sayı 36 / 0,20 = 180; 180 × 0,35 = 63."
+  },
+  {
+   "id": "n02",
+   "ders": "sayisal",
+   "konu": "Problemler",
+   "soru": "Ali'nin yaşı Ayşe'nin yaşının 3 katıdır. 6 yıl sonra Ali'nin yaşı Ayşe'nin yaşının 2 katı olacaktır. Ali şimdi kaç yaşındadır?",
+   "secenekler": [
+    "24",
+    "18",
+    "12",
+    "15",
+    "21"
+   ],
+   "cevap": 1,
+   "aciklama": "3x + 6 = 2(x + 6) → x = 6; Ali 18 yaşındadır."
+  },
+  {
+   "id": "n03",
+   "ders": "sayisal",
+   "konu": "Problemler",
+   "soru": "Bir işi Ahmet tek başına 12 günde, Mehmet tek başına 6 günde bitirebiliyor. İkisi birlikte bu işi kaç günde bitirir?",
+   "secenekler": [
+    "5",
+    "3",
+    "6",
+    "4",
+    "8"
+   ],
+   "cevap": 3,
+   "aciklama": "1/12 + 1/6 = 3/12 = 1/4 → 4 gün."
+  },
+  {
+   "id": "n04",
+   "ders": "sayisal",
+   "konu": "Sayısal Mantık",
+   "soru": "2, 6, 12, 20, 30, ? dizisinde soru işareti yerine hangi sayı gelmelidir?",
+   "secenekler": [
+    "42",
+    "40",
+    "48",
+    "44",
+    "46"
+   ],
+   "cevap": 0,
+   "aciklama": "Farklar 4, 6, 8, 10 şeklinde artıyor; sonraki fark 12 → 30 + 12 = 42."
+  },
+  {
+   "id": "n05",
+   "ders": "sayisal",
+   "konu": "Veri Yorumlama",
+   "soru": "Bir okuldaki beş şubenin öğrenci sayıları 28, 32, 30, 26 ve 34'tür. Şube başına ortalama öğrenci sayısı kaçtır?",
+   "secenekler": [
+    "32",
+    "29",
+    "31",
+    "28",
+    "30"
+   ],
+   "cevap": 4,
+   "aciklama": "Toplam 150; 150 / 5 = 30."
+  },
+  {
+   "id": "n06",
+   "ders": "sayisal",
+   "konu": "Geometri",
+   "soru": "Çevresi 36 cm olan bir dikdörtgenin kısa kenarı uzun kenarının yarısıdır. Bu dikdörtgenin alanı kaç cm²'dir?",
+   "secenekler": [
+    "96",
+    "81",
+    "54",
+    "64",
+    "72"
+   ],
+   "cevap": 4,
+   "aciklama": "x + 2x = 18 → x = 6; kenarlar 6 ve 12, alan 72."
+  },
+  {
+   "id": "n07",
+   "ders": "sayisal",
+   "konu": "Problemler",
+   "soru": "Aralarında 360 km bulunan iki kentten saatte 80 km ve 100 km hızla iki araç aynı anda birbirine doğru yola çıkıyor. Araçlar kaç saat sonra karşılaşır?",
+   "secenekler": [
+    "2,5",
+    "1,5",
+    "4",
+    "3",
+    "2"
+   ],
+   "cevap": 4,
+   "aciklama": "Karşılıklı harekette hızlar toplanır: 360 / 180 = 2 saat."
+  },
+  {
+   "id": "n08",
+   "ders": "sayisal",
+   "konu": "Problemler",
+   "soru": "32 kişilik bir sınıfta kızların sayısının erkeklerin sayısına oranı 3/5'tir. Sınıfta kaç kız öğrenci vardır?",
+   "secenekler": [
+    "20",
+    "10",
+    "16",
+    "12",
+    "14"
+   ],
+   "cevap": 3,
+   "aciklama": "3k + 5k = 32 → k = 4; kız sayısı 12."
+  },
+  {
+   "id": "n09",
+   "ders": "sayisal",
+   "konu": "Problemler",
+   "soru": "Fiyatı önce %20 artırılan bir ürünün yeni fiyatı daha sonra %20 indiriliyor. Ürünün son fiyatı ilk fiyatına göre nasıl değişmiştir?",
+   "secenekler": [
+    "%40 azalmıştır",
+    "%2 azalmıştır",
+    "%4 azalmıştır",
+    "%4 artmıştır",
+    "Değişmemiştir"
+   ],
+   "cevap": 2,
+   "aciklama": "1,20 × 0,80 = 0,96 → %4 azalış."
+  },
+  {
+   "id": "n10",
+   "ders": "sayisal",
+   "konu": "Temel İşlemler",
+   "soru": "Ardışık üç tek sayının toplamı 81 ise bu sayıların en büyüğü kaçtır?",
+   "secenekler": [
+    "31",
+    "25",
+    "29",
+    "33",
+    "27"
+   ],
+   "cevap": 2,
+   "aciklama": "Ortadaki sayı 81 / 3 = 27; sayılar 25, 27, 29."
+  },
+  {
+   "id": "n11",
+   "ders": "sayisal",
+   "konu": "Temel İşlemler",
+   "soru": "24 m ve 36 m uzunluğundaki iki kumaş, hiç artmayacak şekilde eşit uzunlukta ve olabildiğince uzun parçalara kesiliyor. Toplam kaç parça elde edilir?",
+   "secenekler": [
+    "10",
+    "6",
+    "4",
+    "5",
+    "12"
+   ],
+   "cevap": 3,
+   "aciklama": "EBOB(24, 36) = 12 m; 24/12 + 36/12 = 2 + 3 = 5 parça."
+  },
+  {
+   "id": "t01",
+   "ders": "tarih",
+   "konu": "Tarih: İslamiyet Öncesi Türk Tarihi",
+   "soru": "Orhun Yazıtları aşağıdaki Türk devletlerinden hangisi döneminde dikilmiştir?",
+   "secenekler": [
+    "Uygur Devleti",
+    "Asya Hun Devleti",
+    "Avar Kağanlığı",
+    "Hazar Kağanlığı",
+    "II. Göktürk (Kutluk) Devleti"
+   ],
+   "cevap": 4,
+   "aciklama": "Yazıtlar 8. yüzyılda II. Göktürk Devleti döneminde Bilge Kağan, Kül Tigin ve Tonyukuk adına dikilmiştir."
+  },
+  {
+   "id": "t02",
+   "ders": "tarih",
+   "konu": "Tarih: Türk-İslam Devletleri",
+   "soru": "1071 Malazgirt Savaşı'nda Bizans ordusunu yenen Büyük Selçuklu sultanı kimdir?",
+   "secenekler": [
+    "Melikşah",
+    "Tuğrul Bey",
+    "Sultan Sencer",
+    "Alparslan",
+    "Kılıç Arslan"
+   ],
+   "cevap": 3,
+   "aciklama": "Alparslan, Romen Diyojen komutasındaki Bizans ordusunu yenmiştir."
+  },
+  {
+   "id": "t03",
+   "ders": "tarih",
+   "konu": "Tarih: Osmanlı Siyasi Tarihi",
+   "soru": "İstanbul 1453'te hangi Osmanlı padişahı tarafından fethedilmiştir?",
+   "secenekler": [
+    "II. Murad",
+    "Yavuz Sultan Selim",
+    "Yıldırım Bayezid",
+    "II. Mehmed",
+    "I. Murad"
+   ],
+   "cevap": 3,
+   "aciklama": "Fatih Sultan Mehmed (II. Mehmed) 29 Mayıs 1453'te şehri fethetmiştir."
+  },
+  {
+   "id": "t04",
+   "ders": "tarih",
+   "konu": "Tarih: Osmanlı Kültür ve Medeniyeti",
+   "soru": "Osmanlı Devleti'nde siyasi, idari, askerî ve hukuki konuların görüşülüp karara bağlandığı en yüksek kurul hangisidir?",
+   "secenekler": [
+    "Kubbealtı Vakfı",
+    "Enderun",
+    "Bab-ı Seraskeri",
+    "Meclis-i Mebusan",
+    "Divan-ı Hümayun"
+   ],
+   "cevap": 4,
+   "aciklama": "Divan-ı Hümayun devlet işlerinin görüşüldüğü en yüksek kuruldur."
+  },
+  {
+   "id": "t05",
+   "ders": "tarih",
+   "konu": "Tarih: Kurtuluş Savaşı Hazırlık",
+   "soru": "Misak-ı Milli kararları aşağıdakilerden hangisi tarafından kabul edilmiştir?",
+   "secenekler": [
+    "Sivas Kongresi",
+    "Son Osmanlı Mebusan Meclisi",
+    "Türkiye Büyük Millet Meclisi",
+    "Heyet-i Temsiliye",
+    "Erzurum Kongresi"
+   ],
+   "cevap": 1,
+   "aciklama": "Misak-ı Milli 28 Ocak 1920'de son Osmanlı Mebusan Meclisi'nde kabul edilmiştir."
+  },
+  {
+   "id": "t06",
+   "ders": "tarih",
+   "konu": "Tarih: Kurtuluş Savaşı",
+   "soru": "TBMM'nin uluslararası alanda imzaladığı ilk antlaşma hangisidir?",
+   "secenekler": [
+    "Ankara Antlaşması",
+    "Mudanya Ateşkes Antlaşması",
+    "Gümrü Antlaşması",
+    "Moskova Antlaşması",
+    "Kars Antlaşması"
+   ],
+   "cevap": 2,
+   "aciklama": "Gümrü Antlaşması (Aralık 1920) Ermenistan ile imzalanmıştır."
+  },
+  {
+   "id": "t07",
+   "ders": "tarih",
+   "konu": "Tarih: Kurtuluş Savaşı",
+   "soru": "Lozan Barış Antlaşması'nda çözüme kavuşturulamayan ve Irak sınırıyla ilgili olan sorun hangisidir?",
+   "secenekler": [
+    "Savaş tazminatı",
+    "Musul sorunu",
+    "Nüfus mübadelesi",
+    "Boğazlar sorunu",
+    "Kapitülasyonlar"
+   ],
+   "cevap": 1,
+   "aciklama": "Musul meselesi İngiltere ile ikili görüşmelere bırakılmıştır."
+  },
+  {
+   "id": "t08",
+   "ders": "tarih",
+   "konu": "Tarih: Atatürk İlke ve İnkılapları",
+   "soru": "Aşağıdaki inkılaplardan hangisi en son gerçekleştirilmiştir?",
+   "secenekler": [
+    "Tevhid-i Tedrisat Kanunu",
+    "Cumhuriyetin ilanı",
+    "Soyadı Kanunu",
+    "Harf İnkılabı",
+    "Saltanatın kaldırılması"
+   ],
+   "cevap": 2,
+   "aciklama": "Sıralama: saltanat (1922), cumhuriyet (1923), Tevhid-i Tedrisat (1924), harf (1928), soyadı (1934)."
+  },
+  {
+   "id": "t09",
+   "ders": "tarih",
+   "konu": "Tarih: Atatürk Dönemi Dış Politika",
+   "soru": "Hatay hangi yıl anavatana katılmıştır?",
+   "secenekler": [
+    "1939",
+    "1936",
+    "1923",
+    "1932",
+    "1926"
+   ],
+   "cevap": 0,
+   "aciklama": "Hatay Devleti meclisi 1939'da Türkiye'ye katılma kararı almıştır."
+  },
+  {
+   "id": "t10",
+   "ders": "tarih",
+   "konu": "Tarih: Çağdaş Türk ve Dünya Tarihi",
+   "soru": "Türkiye NATO'ya hangi yıl üye olmuştur?",
+   "secenekler": [
+    "1945",
+    "1960",
+    "1952",
+    "1955",
+    "1949"
+   ],
+   "cevap": 2,
+   "aciklama": "Türkiye ve Yunanistan 1952'de NATO'ya katılmıştır."
+  },
+  {
+   "id": "c01",
+   "ders": "cografya",
+   "konu": "Coğrafya: Coğrafi Konum",
+   "soru": "Türkiye'nin en doğusu ile en batısı arasındaki yerel saat farkı kaç dakikadır?",
+   "secenekler": [
+    "60",
+    "84",
+    "72",
+    "76",
+    "80"
+   ],
+   "cevap": 3,
+   "aciklama": "26°-45° doğu meridyenleri arasında 19 meridyen vardır; 19 × 4 = 76 dakika."
+  },
+  {
+   "id": "c02",
+   "ders": "cografya",
+   "konu": "Coğrafya: Yer Şekilleri",
+   "soru": "Türkiye'nin en yüksek dağı hangisidir?",
+   "secenekler": [
+    "Kaçkar Dağı",
+    "Erciyes Dağı",
+    "Süphan Dağı",
+    "Ağrı Dağı",
+    "Uludağ"
+   ],
+   "cevap": 3,
+   "aciklama": "Ağrı Dağı Türkiye'nin en yüksek zirvesidir."
+  },
+  {
+   "id": "c03",
+   "ders": "cografya",
+   "konu": "Coğrafya: Yer Şekilleri",
+   "soru": "Kapadokya'daki peri bacaları hangi süreç sonucunda oluşmuştur?",
+   "secenekler": [
+    "Buzulların aşındırması",
+    "Dalgaların aşındırması",
+    "Kalkerin erimesi",
+    "Volkanik tüflerin aşınması",
+    "Rüzgârın kum biriktirmesi"
+   ],
+   "cevap": 3,
+   "aciklama": "Volkanik tüflerin sel ve yağmur sularıyla farklı aşınması peri bacalarını oluşturmuştur."
+  },
+  {
+   "id": "c04",
+   "ders": "cografya",
+   "konu": "Coğrafya: İklim ve Bitki Örtüsü",
+   "soru": "Her mevsim yağışlı olan ve doğal bitki örtüsü orman olan iklim tipi hangisidir?",
+   "secenekler": [
+    "Karasal iklim",
+    "Çöl iklimi",
+    "Akdeniz iklimi",
+    "Karadeniz iklimi",
+    "Marmara geçiş iklimi"
+   ],
+   "cevap": 3,
+   "aciklama": "Karadeniz ikliminde yağış yıl boyunca görülür."
+  },
+  {
+   "id": "c05",
+   "ders": "cografya",
+   "konu": "Coğrafya: İklim ve Bitki Örtüsü",
+   "soru": "Akdeniz ikliminin doğal bitki örtüsü aşağıdakilerden hangisidir?",
+   "secenekler": [
+    "Maki",
+    "Çayır",
+    "Bozkır",
+    "Tundra",
+    "Savan"
+   ],
+   "cevap": 0,
+   "aciklama": "Yazları sıcak ve kurak geçen Akdeniz ikliminde maki yaygındır."
+  },
+  {
+   "id": "c06",
+   "ders": "cografya",
+   "konu": "Coğrafya: Nüfus ve Yerleşme",
+   "soru": "Türkiye'de nüfus yoğunluğunun en az olduğu coğrafi bölge hangisidir?",
+   "secenekler": [
+    "Doğu Anadolu",
+    "İç Anadolu",
+    "Güneydoğu Anadolu",
+    "Ege",
+    "Karadeniz"
+   ],
+   "cevap": 0,
+   "aciklama": "Yükselti ve sert iklim nedeniyle Doğu Anadolu en seyrek nüfuslu bölgedir."
+  },
+  {
+   "id": "c07",
+   "ders": "cografya",
+   "konu": "Coğrafya: Tarım ve Hayvancılık",
+   "soru": "Türkiye'de çay tarımı en çok hangi bölümde yapılır?",
+   "secenekler": [
+    "Yukarı Fırat",
+    "Batı Karadeniz",
+    "Ege",
+    "Doğu Karadeniz",
+    "Çukurova"
+   ],
+   "cevap": 3,
+   "aciklama": "Bol yağış ve asitli topraklar nedeniyle çay Doğu Karadeniz'de (Rize) yetişir."
+  },
+  {
+   "id": "c08",
+   "ders": "cografya",
+   "konu": "Coğrafya: Madenler ve Enerji",
+   "soru": "Dünya rezervlerinin büyük bölümü Türkiye'de bulunan maden hangisidir?",
+   "secenekler": [
+    "Demir",
+    "Taş kömürü",
+    "Bor",
+    "Boksit",
+    "Bakır"
+   ],
+   "cevap": 2,
+   "aciklama": "Türkiye bor rezervlerinde dünyada ilk sıradadır."
+  },
+  {
+   "id": "c09",
+   "ders": "cografya",
+   "konu": "Coğrafya: Bölgesel Coğrafya",
+   "soru": "GAP (Güneydoğu Anadolu Projesi) ağırlıklı olarak hangi akarsuların havzasında uygulanmaktadır?",
+   "secenekler": [
+    "Gediz ve Büyük Menderes",
+    "Seyhan ve Ceyhan",
+    "Sakarya ve Porsuk",
+    "Fırat ve Dicle",
+    "Kızılırmak ve Yeşilırmak"
+   ],
+   "cevap": 3,
+   "aciklama": "GAP Fırat ve Dicle havzalarında sulama ve enerji amaçlıdır."
+  },
+  {
+   "id": "c10",
+   "ders": "cografya",
+   "konu": "Coğrafya: Madenler ve Enerji",
+   "soru": "Türkiye'nin en büyük barajlarından biri olan Atatürk Barajı hangi akarsu üzerindedir?",
+   "secenekler": [
+    "Dicle",
+    "Kızılırmak",
+    "Seyhan",
+    "Fırat",
+    "Sakarya"
+   ],
+   "cevap": 3,
+   "aciklama": "Atatürk Barajı Fırat Nehri üzerinde, Şanlıurfa-Adıyaman arasındadır."
+  },
+  {
+   "id": "e01",
+   "ders": "egitim",
+   "konu": "Gelişim Psikolojisi",
+   "soru": "Su dolu uzun ince bardaktaki suyun kısa geniş bardağa döküldüğünde miktarının değişmediğini fark eden çocuk, Piaget'ye göre hangi dönemdedir?",
+   "secenekler": [
+    "İşlem öncesi",
+    "Somut işlemler",
+    "Sembolik oyun",
+    "Duyusal-motor",
+    "Soyut işlemler"
+   ],
+   "cevap": 1,
+   "aciklama": "Korunum kazanımı somut işlemler döneminin (7-11 yaş) özelliğidir."
+  },
+  {
+   "id": "e02",
+   "ders": "egitim",
+   "konu": "Gelişim Psikolojisi",
+   "soru": "Öğrencinin tek başına yapamadığı ancak bir yetişkinin desteğiyle başarabildiği görevler alanını Vygotsky hangi kavramla açıklar?",
+   "secenekler": [
+    "Dengeleme",
+    "Yakınsak gelişim alanı",
+    "Şema",
+    "Özümleme",
+    "Ben merkezcilik"
+   ],
+   "cevap": 1,
+   "aciklama": "Yakınsak (yakın) gelişim alanı; desteğe (iskele) ihtiyaç duyulan bölgedir."
+  },
+  {
+   "id": "e03",
+   "ders": "egitim",
+   "konu": "Gelişim Psikolojisi",
+   "soru": "Erikson'a göre ergenlik döneminde yaşanan temel psikososyal kriz hangisidir?",
+   "secenekler": [
+    "Kimlik kazanmaya karşı rol karmaşası",
+    "Girişimciliğe karşı suçluluk",
+    "Benlik bütünlüğüne karşı umutsuzluk",
+    "Yakınlığa karşı yalnızlık",
+    "Güvene karşı güvensizlik"
+   ],
+   "cevap": 0,
+   "aciklama": "12-18 yaş arası kimlik arayışının yoğun olduğu dönemdir."
+  },
+  {
+   "id": "e04",
+   "ders": "egitim",
+   "konu": "Öğrenme Psikolojisi",
+   "soru": "Ödevlerini zamanında teslim eden öğrencinin hafta sonu ek ödevinin kaldırılması, edimsel koşullanmada hangi kavrama örnektir?",
+   "secenekler": [
+    "Sönme",
+    "Genelleme",
+    "Olumlu ceza",
+    "Olumsuz pekiştirme",
+    "Olumlu pekiştirme"
+   ],
+   "cevap": 3,
+   "aciklama": "Hoşa gitmeyen bir uyarıcı ortadan kaldırılarak istenen davranışın sıklığı artırılmıştır."
+  },
+  {
+   "id": "e05",
+   "ders": "egitim",
+   "konu": "Öğrenme Psikolojisi",
+   "soru": "Arkadaşının derse katıldığı için öğretmenden övgü aldığını gören öğrencinin kendisinin de derse katılmaya başlaması Bandura'ya göre neyle açıklanır?",
+   "secenekler": [
+    "Ayırt etme",
+    "Sönme",
+    "Klasik koşullanma",
+    "Kendiliğinden geri gelme",
+    "Dolaylı pekiştirme"
+   ],
+   "cevap": 4,
+   "aciklama": "Modelin aldığı ödülü gözlemlemek gözlemcinin davranışını güçlendirir."
+  },
+  {
+   "id": "e06",
+   "ders": "egitim",
+   "konu": "Öğrenme Psikolojisi",
+   "soru": "Beyaz bir köpekten korkan çocuğun sonra tüm beyaz tüylü hayvanlardan korkması klasik koşullanmada hangi kavramla açıklanır?",
+   "secenekler": [
+    "Ayırt etme",
+    "Üst düzey koşullanma",
+    "Kendiliğinden geri gelme",
+    "Sönme",
+    "Uyarıcı genellemesi"
+   ],
+   "cevap": 4,
+   "aciklama": "Koşullu uyarıcıya benzeyen uyarıcılara da aynı tepki verilmesi genellemedir."
+  },
+  {
+   "id": "e07",
+   "ders": "egitim",
+   "konu": "Öğretim Yöntem ve Teknikleri",
+   "soru": "Öğretmenin derse konunun genel çerçevesini veren bir ön örgütleyiciyle başlayıp genelden özele doğru ilerlemesi hangi öğretim stratejisine uygundur?",
+   "secenekler": [
+    "Tam öğrenme",
+    "Araştırma-inceleme yoluyla öğretim",
+    "Proje tabanlı öğrenme",
+    "Sunuş yoluyla öğretim",
+    "Buluş yoluyla öğretim"
+   ],
+   "cevap": 3,
+   "aciklama": "Ausubel'in sunuş yoluyla öğretiminde ön örgütleyici kullanılır."
+  },
+  {
+   "id": "e08",
+   "ders": "egitim",
+   "konu": "Öğretim Yöntem ve Teknikleri",
+   "soru": "Öğrencilerden iki farklı makaleyi belirlenen ölçütlere göre inceleyip hangisinin daha güçlü kanıt sunduğuna karar vermeleri istenmiştir. Bu etkinlik yenilenmiş Bloom taksonomisinin hangi basamağındadır?",
+   "secenekler": [
+    "Uygulama",
+    "Yaratma",
+    "Anlama",
+    "Değerlendirme",
+    "Hatırlama"
+   ],
+   "cevap": 3,
+   "aciklama": "Ölçütlere dayalı yargıda bulunmak değerlendirme basamağıdır."
+  },
+  {
+   "id": "e09",
+   "ders": "egitim",
+   "konu": "Ölçme ve Değerlendirme",
+   "soru": "Bir testin ölçmek istediği özelliği başka özelliklerle karıştırmadan ölçebilme derecesine ne denir?",
+   "secenekler": [
+    "Geçerlik",
+    "Güvenirlik",
+    "Ayırt edicilik",
+    "Kullanışlılık",
+    "Objektiflik"
+   ],
+   "cevap": 0,
+   "aciklama": "Geçerlik, testin amacına hizmet etme derecesidir."
+  },
+  {
+   "id": "e10",
+   "ders": "egitim",
+   "konu": "Ölçme ve Değerlendirme",
+   "soru": "Santigrat derece (°C) ile yapılan sıcaklık ölçümü hangi ölçek türüne örnektir?",
+   "secenekler": [
+    "Sıralama ölçeği",
+    "Nominal ölçek",
+    "Oranlı ölçek",
+    "Sınıflama ölçeği",
+    "Eşit aralıklı ölçek"
+   ],
+   "cevap": 4,
+   "aciklama": "0 °C sıcaklığın yokluğu değildir (keyfi sıfır), aralıklar eşittir."
+  },
+  {
+   "id": "e11",
+   "ders": "egitim",
+   "konu": "Sınıf Yönetimi",
+   "soru": "Sınıfta olan her şeyin farkında olduğunu öğrencilere hissettiren öğretmenin bu özelliği Kounin'in hangi kavramıyla ifade edilir?",
+   "secenekler": [
+    "Her şeyden haberdar olma",
+    "Kararlı disiplin",
+    "Ben dili",
+    "Mantıksal sonuç",
+    "Sorumluluk modeli"
+   ],
+   "cevap": 0,
+   "aciklama": "Kounin buna 'withitness' (her şeyden haberdar olma) der."
+  },
+  {
+   "id": "e12",
+   "ders": "egitim",
+   "konu": "Rehberlik",
+   "soru": "Aşağıdakilerden hangisi okullardaki rehberlik hizmetlerinin ilkelerinden biri değildir?",
+   "secenekler": [
+    "Gizliliğe önem verilmesi",
+    "Sürekli bir süreç olması",
+    "Yalnızca sorunlu öğrencilere yönelik olması",
+    "Bireyin kendini gerçekleştirmesini amaçlaması",
+    "Gönüllülük esasına dayanması"
+   ],
+   "cevap": 2,
+   "aciklama": "Rehberlik tüm öğrencilere yöneliktir."
+  },
+  {
+   "id": "e13",
+   "ders": "egitim",
+   "konu": "Öğretim Teknolojileri",
+   "soru": "Dale'in yaşantı konisinde en somut yaşantı basamağı hangisidir?",
+   "secenekler": [
+    "Filmler",
+    "Doğrudan amaçlı yaşantılar",
+    "Görsel semboller",
+    "Sözel semboller",
+    "Gösteriler"
+   ],
+   "cevap": 1,
+   "aciklama": "Konin tabanındaki doğrudan amaçlı yaşantılar en somut basamaktır."
+  },
+  {
+   "id": "e14",
+   "ders": "egitim",
+   "konu": "Program Okuryazarlığı",
+   "soru": "Aşağıdakilerden hangisi eğitim programının temel öğelerinden biri değildir?",
+   "secenekler": [
+    "Okul binası",
+    "Eğitim durumları",
+    "Hedef",
+    "İçerik",
+    "Değerlendirme"
+   ],
+   "cevap": 0,
+   "aciklama": "Program öğeleri hedef, içerik, eğitim durumları ve değerlendirmedir."
+  },
+  {
+   "id": "e15",
+   "ders": "egitim",
+   "konu": "Türk Milli Eğitim Sisteminin Yapısı",
+   "soru": "1739 sayılı Kanun'a göre Türk Milli Eğitim Sistemi hangi iki ana bölümden oluşur?",
+   "secenekler": [
+    "Okul öncesi ve ilköğretim",
+    "Genel eğitim ve mesleki eğitim",
+    "Örgün eğitim ve yaygın eğitim",
+    "Resmî eğitim ve özel eğitim",
+    "Temel eğitim ve yükseköğretim"
+   ],
+   "cevap": 2,
+   "aciklama": "Kanun sistemi örgün ve yaygın eğitim olarak ikiye ayırır."
+  },
+  {
+   "id": "e16",
+   "ders": "egitim",
+   "konu": "Türkiye Yüzyılı Maarif Modeli",
+   "soru": "Türkiye Yüzyılı Maarif Modeli'nde öğretim programlarının bütüncül yapısını oluşturan çerçevelerden biri aşağıdakilerden hangisidir?",
+   "secenekler": [
+    "Davranışçı kazanım çerçevesi",
+    "Erdem-değer-eylem çerçevesi",
+    "Merkezi sınav çerçevesi",
+    "Ezber temelli bilgi çerçevesi",
+    "Tek tip ölçme çerçevesi"
+   ],
+   "cevap": 1,
+   "aciklama": "Model, erdem-değer-eylem çerçevesi ve beceriler çerçevesi gibi bileşenler içerir."
+  },
+  {
+   "id": "m01",
+   "ders": "mevzuat",
+   "konu": "Anayasa'da Eğitim",
+   "soru": "\"İlköğretim, kız ve erkek bütün vatandaşlar için zorunludur ve Devlet okullarında parasızdır.\" hükmü Anayasa'nın hangi maddesinde yer alır?",
+   "secenekler": [
+    "24. madde",
+    "58. madde",
+    "130. madde",
+    "42. madde",
+    "10. madde"
+   ],
+   "cevap": 3,
+   "aciklama": "Anayasa'nın 42. maddesi eğitim ve öğrenim hakkı ve ödevini düzenler."
+  },
+  {
+   "id": "m02",
+   "ders": "mevzuat",
+   "konu": "1739 Sayılı Milli Eğitim Temel Kanunu",
+   "soru": "\"Eğitimde kız ve erkek öğrencilerin birlikte eğitim görmesi\" 1739 sayılı Kanun'un hangi temel ilkesidir?",
+   "secenekler": [
+    "Genellik ve eşitlik",
+    "Laiklik",
+    "Karma eğitim",
+    "Fırsat ve imkân eşitliği",
+    "Her yerde eğitim"
+   ],
+   "cevap": 2,
+   "aciklama": "Karma eğitim ilkesi kız ve erkeklerin birlikte eğitilmesini ifade eder."
+  },
+  {
+   "id": "m03",
+   "ders": "mevzuat",
+   "konu": "1739 Sayılı Milli Eğitim Temel Kanunu",
+   "soru": "Bireylerin ilgi, istidat ve kabiliyetleri doğrultusunda çeşitli programlara ya da okullara yönlendirilmesi 1739 sayılı Kanun'daki hangi ilkeyle ilgilidir?",
+   "secenekler": [
+    "Planlılık",
+    "Yöneltme",
+    "Süreklilik",
+    "Bilimsellik",
+    "Demokrasi eğitimi"
+   ],
+   "cevap": 1,
+   "aciklama": "Yöneltme ilkesi bireyleri yetenekleri doğrultusunda yönlendirmeyi öngörür."
+  },
+  {
+   "id": "m04",
+   "ders": "mevzuat",
+   "konu": "1739 Sayılı Milli Eğitim Temel Kanunu",
+   "soru": "Aşağıdakilerden hangisi 1739 sayılı Milli Eğitim Temel Kanunu'nda yer alan temel ilkelerden biri değildir?",
+   "secenekler": [
+    "Laiklik",
+    "Bilimsellik",
+    "Sınavsız yükseköğretim",
+    "Planlılık",
+    "Okul ile ailenin iş birliği"
+   ],
+   "cevap": 2,
+   "aciklama": "Sınavsız yükseköğretim kanunda bir ilke olarak yer almaz."
+  },
+  {
+   "id": "m05",
+   "ders": "mevzuat",
+   "konu": "222 Sayılı İlköğretim Kanunu",
+   "soru": "222 sayılı kanunun adı aşağıdakilerden hangisidir?",
+   "secenekler": [
+    "Milli Eğitim Temel Kanunu",
+    "Tevhid-i Tedrisat Kanunu",
+    "Özel Öğretim Kurumları Kanunu",
+    "Öğretmenlik Meslek Kanunu",
+    "İlköğretim ve Eğitim Kanunu"
+   ],
+   "cevap": 4,
+   "aciklama": "222 sayılı kanun İlköğretim ve Eğitim Kanunu'dur; 1739 Temel Kanun, 7528 Öğretmenlik Meslek Kanunu'dur."
+  },
+  {
+   "id": "m06",
+   "ders": "mevzuat",
+   "konu": "7528 Sayılı Öğretmenlik Meslek Kanunu",
+   "soru": "7528 sayılı Öğretmenlik Meslek Kanunu'na göre öğretmen adaylarının hazırlık eğitimi aldığı kurum hangisidir?",
+   "secenekler": [
+    "Ölçme, Seçme ve Yerleştirme Merkezi",
+    "Hizmet içi eğitim enstitüsü",
+    "Milli Eğitim Akademisi",
+    "Yükseköğretim Kurulu",
+    "Talim ve Terbiye Kurulu"
+   ],
+   "cevap": 2,
+   "aciklama": "AGS ile seçilen adaylar Milli Eğitim Akademisi'nde hazırlık eğitimi alır."
+  },
+  {
+   "id": "m07",
+   "ders": "mevzuat",
+   "konu": "7528 Sayılı Öğretmenlik Meslek Kanunu",
+   "soru": "7528 sayılı Kanun'a göre öğretmenlik kariyer basamakları aşağıdakilerin hangisinde doğru verilmiştir?",
+   "secenekler": [
+    "Öğretmen, uzman öğretmen, başöğretmen",
+    "Stajyer, öğretmen, müdür",
+    "Aday, öğretmen, müfettiş",
+    "Öğretmen, şef öğretmen, baş müfettiş",
+    "Yardımcı öğretmen, öğretmen, eğitim uzmanı"
+   ],
+   "cevap": 0,
+   "aciklama": "Kariyer basamakları öğretmen, uzman öğretmen ve başöğretmendir."
+  },
+  {
+   "id": "m08",
+   "ders": "mevzuat",
+   "konu": "Anayasa'da Eğitim",
+   "soru": "Anayasa'ya göre eğitim ve öğretim kimin gözetim ve denetimi altında yapılır?",
+   "secenekler": [
+    "Okul aile birliklerinin",
+    "Yerel yönetimlerin",
+    "Sivil toplum kuruluşlarının",
+    "Ailelerin",
+    "Devletin"
+   ],
+   "cevap": 4,
+   "aciklama": "42. madde: eğitim ve öğretim Devletin gözetim ve denetimi altında yapılır."
+  },
+  {
+   "id": "p01",
+   "ders": "pdr",
+   "konu": "Psikolojik Danışma Kuramları",
+   "soru": "Koşulsuz kabul, empatik anlayış ve içtenliği danışma sürecinin temel koşulları olarak gören kuramcı kimdir?",
+   "secenekler": [
+    "Fritz Perls",
+    "Carl Rogers",
+    "Albert Ellis",
+    "Sigmund Freud",
+    "William Glasser"
+   ],
+   "cevap": 1,
+   "aciklama": "Danışan merkezli yaklaşımda bu üç koşul yeterli ve gereklidir."
+  },
+  {
+   "id": "p02",
+   "ders": "pdr",
+   "konu": "Psikolojik Danışma Kuramları",
+   "soru": "Aşağılık duygusu, üstünlük çabası, yaşam stili ve doğum sırası kavramları hangi kurama aittir?",
+   "secenekler": [
+    "Gerçeklik terapisi",
+    "Transaksiyonel analiz",
+    "Gestalt terapi",
+    "Bireysel psikoloji (Adler)",
+    "Varoluşçu terapi"
+   ],
+   "cevap": 3,
+   "aciklama": "Bu kavramlar Alfred Adler'in bireysel psikolojisinin temelidir."
+  },
+  {
+   "id": "p03",
+   "ders": "pdr",
+   "konu": "Psikolojik Danışma Kuramları",
+   "soru": "Akılcı duygusal davranışçı terapideki ABC modelinde \"B\" neyi ifade eder?",
+   "secenekler": [
+    "Duygusal ve davranışsal sonuç",
+    "Olaya ilişkin inançlar",
+    "Harekete geçirici olay",
+    "Yeni etki",
+    "Tartışma"
+   ],
+   "cevap": 1,
+   "aciklama": "A olay, B olaya ilişkin inanç, C ise sonuçtur."
+  },
+  {
+   "id": "p04",
+   "ders": "pdr",
+   "konu": "Psikolojik Danışma Kuramları",
+   "soru": "Danışanın davranışlarının sorumluluğunu üstlenmesini, temel ihtiyaçlarını sorumlu biçimde karşılamasını ve seçim kuramını esas alan yaklaşım hangisidir?",
+   "secenekler": [
+    "Danışan merkezli yaklaşım",
+    "Psikanalitik yaklaşım",
+    "Bireysel psikoloji",
+    "Gerçeklik terapisi",
+    "Gestalt terapi"
+   ],
+   "cevap": 3,
+   "aciklama": "William Glasser'in gerçeklik terapisi seçim kuramına dayanır."
+  },
+  {
+   "id": "p05",
+   "ders": "pdr",
+   "konu": "Psikolojik Danışma Kuramları",
+   "soru": "\"Şimdi ve burada\" ilkesini, farkındalığı ve tamamlanmamış işleri merkeze alan kuram hangisidir?",
+   "secenekler": [
+    "Gerçeklik terapisi",
+    "Gestalt terapi",
+    "Transaksiyonel analiz",
+    "Psikanaliz",
+    "Bilişsel terapi"
+   ],
+   "cevap": 1,
+   "aciklama": "Fritz Perls'in Gestalt terapisi şimdi ve burada farkındalığı vurgular."
+  },
+  {
+   "id": "p06",
+   "ders": "pdr",
+   "konu": "Psikolojik Danışma Kuramları",
+   "soru": "Ebeveyn, yetişkin ve çocuk ego durumlarını kullanarak kişiler arası ilişkileri inceleyen yaklaşım hangisidir?",
+   "secenekler": [
+    "Akılcı duygusal davranışçı terapi",
+    "Psikanaliz",
+    "Transaksiyonel analiz",
+    "Varoluşçu terapi",
+    "Çözüm odaklı terapi"
+   ],
+   "cevap": 2,
+   "aciklama": "Eric Berne'in transaksiyonel analizi ego durumlarına dayanır."
+  },
+  {
+   "id": "p07",
+   "ders": "pdr",
+   "konu": "Mesleki Rehberlik ve Kariyer Kuramları",
+   "soru": "İnsanlara yardım etmekten, öğretmekten ve iş birliğinden hoşlanan bireyler Holland'ın hangi kişilik tipine girer?",
+   "secenekler": [
+    "Araştırmacı",
+    "Girişimci",
+    "Geleneksel",
+    "Sosyal",
+    "Gerçekçi"
+   ],
+   "cevap": 3,
+   "aciklama": "Sosyal tip; öğretmenlik, psikolojik danışmanlık gibi meslekler için uygundur."
+  },
+  {
+   "id": "p08",
+   "ders": "pdr",
+   "konu": "Mesleki Rehberlik ve Kariyer Kuramları",
+   "soru": "Mesleki gelişimi benlik kavramının yaşam boyu gerçekleştirilmesi süreci olarak gören kuramcı kimdir?",
+   "secenekler": [
+    "Eli Ginzberg",
+    "John Holland",
+    "Anne Roe",
+    "Donald Super",
+    "Linda Gottfredson"
+   ],
+   "cevap": 3,
+   "aciklama": "Super'in yaşam boyu-yaşam alanı yaklaşımı benlik kavramını merkeze alır."
+  },
+  {
+   "id": "p09",
+   "ders": "pdr",
+   "konu": "Mesleki Rehberlik ve Kariyer Kuramları",
+   "soru": "Meslek seçimini erken çocukluk yaşantıları ve anne-baba tutumlarıyla ilişkilendiren kuramcı kimdir?",
+   "secenekler": [
+    "Donald Super",
+    "Anne Roe",
+    "John Krumboltz",
+    "Eli Ginzberg",
+    "John Holland"
+   ],
+   "cevap": 1,
+   "aciklama": "Roe ihtiyaçların ve aile ikliminin meslek yönelimini etkilediğini savunur."
+  },
+  {
+   "id": "p10",
+   "ders": "pdr",
+   "konu": "Bireyi Tanıma Teknikleri",
+   "soru": "Sınıftaki arkadaşlık ilişkilerini ve grupta yalnız kalan öğrencileri belirlemek isteyen bir psikolojik danışman hangi tekniği kullanmalıdır?",
+   "secenekler": [
+    "Sosyometri",
+    "Projektif test",
+    "Anekdot kaydı",
+    "Zekâ testi",
+    "Otobiyografi"
+   ],
+   "cevap": 0,
+   "aciklama": "Sosyometri grup içi tercih ve ilişkileri ortaya koyar."
+  },
+  {
+   "id": "p11",
+   "ders": "pdr",
+   "konu": "Bireyi Tanıma Teknikleri",
+   "soru": "Aşağıdakilerden hangisi projektif bir kişilik testidir?",
+   "secenekler": [
+    "Wechsler Zekâ Ölçeği",
+    "MMPI",
+    "Kimdir Bu?",
+    "Rorschach Mürekkep Lekesi Testi",
+    "Otobiyografi"
+   ],
+   "cevap": 3,
+   "aciklama": "Rorschach ve TAT belirsiz uyaranlara dayanan projektif testlerdir."
+  },
+  {
+   "id": "p12",
+   "ders": "pdr",
+   "konu": "Grupla Psikolojik Danışma",
+   "soru": "Grup üyesinin, yaşadığı sorunu yalnızca kendisinin yaşamadığını fark etmesi Yalom'un hangi terapötik etkenine örnektir?",
+   "secenekler": [
+    "Özgecilik",
+    "Bilgi paylaşma",
+    "Evrensellik",
+    "Katarsis",
+    "Umut aşılama"
+   ],
+   "cevap": 2,
+   "aciklama": "Evrensellik 'yalnız değilim' duygusunu ifade eder."
+  },
+  {
+   "id": "p13",
+   "ders": "pdr",
+   "konu": "Mesleki Etik",
+   "soru": "Psikolojik danışmada gizlilik ilkesi aşağıdaki durumların hangisinde sınırlanabilir?",
+   "secenekler": [
+    "Danışman yoğun olduğunda",
+    "Danışanın kendisi ya da başkaları için ciddi bir yaşam tehlikesi bulunduğunda",
+    "Danışanın öğretmeni merak ettiğinde",
+    "Danışan sınıf değiştirdiğinde",
+    "Görüşme yarım kaldığında"
+   ],
+   "cevap": 1,
+   "aciklama": "Ciddi ve yakın tehlike gizliliğin sınırıdır."
+  }
+ ]
+}

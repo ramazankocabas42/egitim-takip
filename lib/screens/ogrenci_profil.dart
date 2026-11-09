@@ -18,6 +18,7 @@ const kpssDuzeyleri = ['Lisans', 'Önlisans', 'Ortaöğretim'];
 
 /// Gizlenebilen sekmeler: kimlik, ad.
 const secilebilirSekmeler = <(String, String)>[
+  ('ags', 'AGS Hazırlık (AGS hedefinde)'),
   ('oneriler', 'Önerilerim'),
   ('odevler', 'Ödevler'),
   ('plan', 'Plan'),

@@ -5,6 +5,9 @@ name: APK Derle
 on:
   push:
     branches: [main]
+    # Günlük deneme içerikleri yeni sürüm derlemez
+    paths-ignore:
+      - 'icerik/**'
   workflow_dispatch:
 
 permissions:
