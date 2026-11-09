@@ -6,6 +6,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../services/kapak_okuyucu.dart';
 import '../services/kitap_katalog.dart';
+import 'common.dart' show DersAyari;
 
 /// Kitap ekleme formlarının üstündeki arama kutusu: ad / yayınevi / ISBN
 /// yazarak arar ya da barkod okutur. Seçilen kitap [onSecildi] ile döner.
@@ -333,7 +334,7 @@ class _KitapBulucuState extends State<KitapBulucu> {
           child: TextButton.icon(
             onPressed: _mebAc,
             icon: const Icon(Icons.account_balance_outlined),
-            label: const Text('Hazır listeden seç (MEB, Tonguç • 6-12. sınıf)'),
+            label: const Text('Hazır listeden seç (MEB, Tonguç 6-12 • AGS / ÖABT)'),
           ),
         ),
         Text(
@@ -519,7 +520,8 @@ class MebKitapSecici extends StatefulWidget {
   const MebKitapSecici({super.key});
 
   static int sonSinif = 8;
-  static String sonKaynak = 'MEB';
+  static String? sonKaynak;
+  static String sonDers = 'Tümü';
 
   @override
   State<MebKitapSecici> createState() => _MebKitapSeciciState();
@@ -530,13 +532,22 @@ const _turBasliklari = {
   'soru': 'Soru bankaları',
   'hazirlik': 'Hazırlık kitapları',
   'deneme': 'Denemeler',
+  'cikmis': 'Çıkmış sorular',
   'diger': 'Diğer',
 };
 
 class _MebKitapSeciciState extends State<MebKitapSecici> {
   late final Future<List<HazirKitap>> _liste = KitapKatalog.hazirKitaplar();
   int _sinif = MebKitapSecici.sonSinif;
-  String _kaynak = MebKitapSecici.sonKaynak;
+  String _kaynak = MebKitapSecici.sonKaynak ??
+      (DersAyari.aktif.contains('Mevzuat') ? 'AGS' : 'MEB');
+  String _ders = MebKitapSecici.sonDers;
+
+  static const _agsDersleri = [
+    'Tümü', 'Sözel Yetenek', 'Sayısal Yetenek', 'Tarih', 'Türkiye Coğrafyası',
+    'Eğitim Bilimleri', 'Mevzuat', 'Alan Bilgisi (ÖABT)', 'Genel / Karma',
+  ];
+  bool get _ags => _kaynak == 'AGS';
 
   @override
   Widget build(BuildContext context) {
@@ -552,7 +563,7 @@ class _MebKitapSeciciState extends State<MebKitapSecici> {
                 for (final k in KitapKatalog.hazirListeler.keys)
                   ButtonSegment(
                       value: k,
-                      label: Text(k == 'MEB' ? 'MEB ders kitapları' : '$k Yayınları')),
+                      label: Text(k == 'MEB' ? 'MEB' : (k == 'AGS' ? 'AGS / ÖABT' : k))),
               ],
               selected: {_kaynak},
               onSelectionChanged: (v) => setState(() {
@@ -567,6 +578,20 @@ class _MebKitapSeciciState extends State<MebKitapSecici> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
+                if (_ags)
+                  for (final d in _agsDersleri)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: ChoiceChip(
+                        label: Text(d == 'Alan Bilgisi (ÖABT)' ? 'PDR ÖABT' : (d == 'Genel / Karma' ? 'Setler' : d)),
+                        selected: _ders == d,
+                        onSelected: (_) => setState(() {
+                          _ders = d;
+                          MebKitapSecici.sonDers = d;
+                        }),
+                      ),
+                    )
+                else
                 for (var s = 6; s <= 12; s++)
                   Padding(
                     padding: const EdgeInsets.only(right: 6),
@@ -588,11 +613,13 @@ class _MebKitapSeciciState extends State<MebKitapSecici> {
               builder: (context, snap) {
                 if (!snap.hasData) return const Center(child: CircularProgressIndicator());
                 final l = snap.data!
-                    .where((m) => m.kaynak == _kaynak && m.sinif == _sinif)
+                    .where((m) => m.kaynak == _kaynak &&
+                        (_ags ? (_ders == 'Tümü' || m.kitap.subject == _ders) : m.sinif == _sinif))
                     .toList();
                 Widget oge(HazirKitap m) {
                   final k = m.kitap;
                   final alt = [
+                    if (_ags && k.publisher.isNotEmpty) k.publisher,
                     k.subject,
                     if (k.totalPages > 0) '${k.totalPages} sayfa',
                     if (k.isbn.isNotEmpty) 'ISBN ${k.isbn}',
@@ -630,7 +657,7 @@ class _MebKitapSeciciState extends State<MebKitapSecici> {
                     if (l.isEmpty)
                       const Padding(
                         padding: EdgeInsets.all(24),
-                        child: Text('Bu sınıf için listede kitap yok.'),
+                        child: Text('Bu seçim için listede kitap yok.'),
                       ),
                     for (final g in gruplar.entries)
                       if (g.value.isNotEmpty) ...[

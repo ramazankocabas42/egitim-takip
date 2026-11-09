@@ -98,6 +98,7 @@ class KitapKatalog {
   static const hazirListeler = {
     'MEB': 'assets/meb_kitaplari.json',
     'Tonguç': 'assets/tonguc_kitaplari.json',
+    'AGS': 'assets/ags_kitaplari.json',
   };
 
   static List<HazirKitap>? _hazir;
