@@ -212,6 +212,15 @@ class _KitapBulucuState extends State<KitapBulucu> {
     }
   }
 
+  String _hazirEtiket() {
+    final k = hazirListeKapsami();
+    if (k.kaynaklar.contains('AGS') && k.kaynaklar.length == 1) return 'Hazır listeden seç (AGS / ÖABT kitapları)';
+    if (k.sinif != null && k.kaynaklar.length < 3) {
+      return 'Hazır listeden seç (${k.sinif == 12 && !k.kaynaklar.contains('MEB') ? 'YKS' : '${k.sinif}. sınıf'} kitapları)';
+    }
+    return 'Hazır listeden seç (MEB, Tonguç, AGS)';
+  }
+
   Future<void> _mebAc() async {
     FocusScope.of(context).unfocus();
     final k = await showModalBottomSheet<KatalogKitap>(
@@ -329,14 +338,15 @@ class _KitapBulucuState extends State<KitapBulucu> {
                   .toList(),
             ),
           ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: _mebAc,
-            icon: const Icon(Icons.account_balance_outlined),
-            label: const Text('Hazır listeden seç (MEB, Tonguç 6-12 • AGS / ÖABT)'),
+        if (hazirListeKapsami().kaynaklar.isNotEmpty)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _mebAc,
+              icon: const Icon(Icons.account_balance_outlined),
+              label: Text(_hazirEtiket()),
+            ),
           ),
-        ),
         Text(
           'Barkodu / karekodu okutun, kapağın fotoğrafını çekin ya da kitabın adını yazın; bulunan kitap seçilince '
           'bilgileri tamsa hemen kaydedilir.',
@@ -514,6 +524,24 @@ Future<void> kayitsizKitapUyarisi(BuildContext context, String isbn,
   );
 }
 
+/// Öğrencinin kayıtlı sınıfına / hedef sınavına göre gösterilecek hazır
+/// listeler ve sınıf. AGS hedefi: yalnız AGS / ÖABT kitapları; 6-12. sınıf:
+/// yalnız o sınıfın MEB ve Tonguç kitapları; mezun + YKS: YKS kitapları.
+/// Uygun liste yoksa boş döner (hazır liste düğmesi gizlenir).
+({List<String> kaynaklar, int? sinif}) hazirListeKapsami() {
+  final g = DersAyari.sinif;
+  final h = DersAyari.hedef;
+  if (g.isEmpty && h.isEmpty) {
+    return (kaynaklar: KitapKatalog.hazirListeler.keys.toList(), sinif: null);
+  }
+  if (h == 'AGS') return (kaynaklar: const ['AGS'], sinif: null);
+  final m = RegExp(r'^(\d+)\. Sınıf$').firstMatch(g);
+  final n = m == null ? null : int.parse(m.group(1)!);
+  if (n != null && n >= 6 && n <= 12) return (kaynaklar: const ['MEB', 'Tonguç'], sinif: n);
+  if (h == 'YKS') return (kaynaklar: const ['Tonguç'], sinif: 12);
+  return (kaynaklar: const <String>[], sinif: null);
+}
+
 /// Hazır kitap listeleri (MEB ders kitapları, Tonguç ...): kaynak ve sınıf
 /// seçilir, kitaba dokununca döner.
 class MebKitapSecici extends StatefulWidget {
@@ -538,9 +566,11 @@ const _turBasliklari = {
 
 class _MebKitapSeciciState extends State<MebKitapSecici> {
   late final Future<List<HazirKitap>> _liste = KitapKatalog.hazirKitaplar();
-  int _sinif = MebKitapSecici.sonSinif;
-  String _kaynak = MebKitapSecici.sonKaynak ??
-      (DersAyari.aktif.contains('Mevzuat') ? 'AGS' : 'MEB');
+  late int _sinif = hazirListeKapsami().sinif ?? MebKitapSecici.sonSinif;
+  late final _kapsam = hazirListeKapsami();
+  late String _kaynak = _kapsam.kaynaklar.contains(MebKitapSecici.sonKaynak)
+      ? MebKitapSecici.sonKaynak!
+      : (_kapsam.kaynaklar.isEmpty ? 'MEB' : _kapsam.kaynaklar.first);
   String _ders = MebKitapSecici.sonDers;
 
   static const _agsDersleri = [
@@ -556,11 +586,12 @@ class _MebKitapSeciciState extends State<MebKitapSecici> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (_kapsam.kaynaklar.length > 1)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: SegmentedButton<String>(
               segments: [
-                for (final k in KitapKatalog.hazirListeler.keys)
+                for (final k in _kapsam.kaynaklar)
                   ButtonSegment(
                       value: k,
                       label: Text(k == 'MEB' ? 'MEB' : (k == 'AGS' ? 'AGS / ÖABT' : k))),
@@ -572,6 +603,7 @@ class _MebKitapSeciciState extends State<MebKitapSecici> {
               }),
             ),
           ),
+          if (_ags || _kapsam.sinif == null)
           SizedBox(
             height: 46,
             child: ListView(

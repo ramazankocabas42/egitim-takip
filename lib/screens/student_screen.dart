@@ -77,6 +77,8 @@ class _StudentScreenState extends State<StudentScreen> {
             (s.hedefSinav.isEmpty && !ortaokulVeAlti(s.grade));
         final gizli = s.gizliSekmeler.toSet();
         DersAyari.aktif = s.dersler;
+        DersAyari.sinif = s.grade;
+        DersAyari.hedef = hedef;
         bool acik(String id) => !gizli.contains(id);
         final sekmeler = <(Tab, Widget)>[
           (const Tab(icon: Icon(Icons.dashboard_outlined), text: 'Özet'), OverviewTab(student: s, me: me)),

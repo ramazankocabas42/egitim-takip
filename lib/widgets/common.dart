@@ -14,6 +14,10 @@ import '../models.dart';
 class DersAyari {
   DersAyari._();
   static List<String> aktif = const [];
+
+  /// Açık olan öğrencinin sınıfı ve hedef sınavı (hazır kitap listeleri buna göre süzülür).
+  static String sinif = '';
+  static String hedef = '';
   static List<String> secenekler([String? mevcut]) {
     final l = aktif.isEmpty ? subjects : [...aktif, 'Genel / Karma', 'Diğer'];
     return [
